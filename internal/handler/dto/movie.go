@@ -6,14 +6,12 @@ type UpdateMovieRequest struct {
 	Title       *string `json:"title"`
 	Description *string `json:"description"`
 	Duration    *int    `json:"duration"`
-	Image       []byte  `json:"image"`
 }
 
 type CreateMovieRequest struct {
 	Title       string  `json:"title"`
 	Description *string `json:"description"`
 	Duration    int     `json:"duration"`
-	Image       []byte  `json:"image"`
 }
 
 type MovieResponse struct {
@@ -21,6 +19,5 @@ type MovieResponse struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Duration    int       `json:"duration"`
-	Image       []byte    `json:"image"`
 	CreatedAt   time.Time `json:"created_at"`
 }

@@ -162,3 +162,68 @@ func (r *MovieRepository) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (r *MovieRepository) GetImage(ctx context.Context, id int64) ([]byte, error) {
+	const op = "repository.GetImage"
+
+	query := `
+	SELECT image FROM movies
+	WHERE id = $1
+	`
+
+	var image []byte
+
+	err := r.pool.QueryRow(ctx, query, id).Scan(&image)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, repository.ErrNotFound
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if image == nil {
+		return nil, repository.ErrNotFound
+	}
+
+	return image, nil
+}
+
+func (r *MovieRepository) PutImage(ctx context.Context, id int64, image []byte) error {
+	const op = "repository.PutImage"
+
+	query := `
+	UPDATE movies
+	SET image = $1
+	WHERE id = $2`
+
+	tag, err := r.pool.Exec(ctx, query, image, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return repository.ErrNotFound
+	}
+
+	return nil
+}
+
+func (r *MovieRepository) DeleteImage(ctx context.Context, id int64) error {
+	const op = "repository.DeleteImage"
+
+	query := `
+	UPDATE movies
+	SET image = NULL
+	WHERE id = $1`
+
+	tag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return repository.ErrNotFound
+	}
+
+	return nil
+}
