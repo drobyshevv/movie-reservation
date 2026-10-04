@@ -13,17 +13,20 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/handler/dto"
 	"github.com/drobyshevv/movie-reservation/internal/models"
 	"github.com/drobyshevv/movie-reservation/internal/service"
+	"github.com/go-playground/validator/v10"
 )
 
 type MovieHandler struct {
-	log     *slog.Logger
-	Service MovieService
+	log       *slog.Logger
+	Service   MovieService
+	validator *validator.Validate
 }
 
-func NewMovieHandler(service MovieService, log *slog.Logger) *MovieHandler {
+func NewMovieHandler(log *slog.Logger, service MovieService, validator *validator.Validate) *MovieHandler {
 	return &MovieHandler{
-		log:     log,
-		Service: service,
+		log:       log,
+		Service:   service,
+		validator: validator,
 	}
 }
 
@@ -114,30 +117,26 @@ func (h *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 
 func (h *MovieHandler) PostMovie(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.PostMovie"
+
 	log := h.log.With(
 		slog.String("op", op),
 	)
 
 	req := dto.CreateMovieRequest{}
 
-	req.Title = r.FormValue("title")
-	description := r.FormValue("description")
-
-	if description == "" {
-		req.Description = nil
-	} else {
-		req.Description = &description
-	}
-
-	durationStr := r.FormValue("duration")
-	duration, err := strconv.Atoi(durationStr)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		log.Info("invalid form value parameter", "param", "duration", "err", err)
+		log.Info("failed to decode request body", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	req.Duration = duration
+	err = h.validator.Struct(req)
+	if err != nil {
+		log.Info("invalid request", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	params := models.CreateMovieParams{
 		Title:       req.Title,
@@ -191,13 +190,24 @@ func (h *MovieHandler) PatchMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Title == nil && req.Description == nil && req.Duration == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.validator.Struct(req)
+	if err != nil {
+		log.Info("invalid request", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	params := models.UpdateMovieParams{
 		Title:       req.Title,
 		Description: req.Description,
-		//Duration:    &duration,
 	}
 
-	if req.Duration != nil && *req.Duration != 0 {
+	if req.Duration != nil {
 		duration := time.Duration(*req.Duration) * time.Minute
 		params.Duration = &duration
 	}
@@ -226,9 +236,7 @@ func (h *MovieHandler) PatchMovies(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
-		log.Info("failed to convert query id to int", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		log.Error("failed to encode response", "err", err)
 	}
 }
 
@@ -313,7 +321,7 @@ func (h *MovieHandler) PutImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, _, err := r.FormFile("image")
+	file, header, err := r.FormFile("image")
 	if err != nil {
 		log.Info("failed to parse form file", "file", "image", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -321,10 +329,25 @@ func (h *MovieHandler) PutImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	if header.Size > 5*1024*1024 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	imageBytes, err := io.ReadAll(file)
 	if err != nil {
 		log.Error("failed to read file", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	contentType := http.DetectContentType(imageBytes)
+
+	switch contentType {
+	case "image/jpeg", "image/png", "image/webp":
+		// OK
+	default:
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
