@@ -22,14 +22,12 @@ type HttpServer struct {
 
 type DataBase struct {
 	User     string `yaml:"user" env:"DB_USER" env-default:"postgres"`
-	Password string `yaml:"" env:"DB_PASSWORD"`
-	Host     string `yaml:"" env:"DB_HOST" env-default:"localhost"`
-	Port     int    `yaml:"" env:"DB_PORT" env-default:"5432"`
-	Name     string `yaml:"" env:"DB_NAME" env-default:"movie-reservation"`
-	SslMode  string `yaml:"" env:"DB_SSLMODE" env-default:"disable"`
+	Password string `yaml:"password" env:"POSTGRES_PASSWORD"`
+	Host     string `yaml:"host" env:"DB_HOST" env-default:"localhost"`
+	Port     int    `yaml:"port" env:"DB_PORT" env-default:"5432"`
+	Name     string `yaml:"db_name" env:"DB_NAME" env-default:"movie-reservation"`
+	SslMode  string `yaml:"sslmode" env:"DB_SSLMODE" env-default:"disable"`
 }
-
-// postgres://user:password@host:5432/mydb?sslmode=require
 
 func BuildDSN(db DataBase) string {
 	return fmt.Sprintf(
