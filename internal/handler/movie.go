@@ -18,14 +18,14 @@ import (
 
 type MovieHandler struct {
 	log       *slog.Logger
-	Service   MovieService
+	service   MovieService
 	validator *validator.Validate
 }
 
 func NewMovieHandler(log *slog.Logger, service MovieService, validator *validator.Validate) *MovieHandler {
 	return &MovieHandler{
 		log:       log,
-		Service:   service,
+		service:   service,
 		validator: validator,
 	}
 }
@@ -47,10 +47,11 @@ func (h *MovieHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
-	movies, err := h.Service.GetMovies(r.Context())
+	movies, err := h.service.GetMovies(r.Context())
 	if err != nil {
 		log.Error("failed to get movies", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	resp := []dto.MovieResponse{}
@@ -87,7 +88,7 @@ func (h *MovieHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, err := h.Service.GetMovie(r.Context(), id)
+	movie, err := h.service.GetMovie(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, service.ErrMovieNotFound) {
 			log.Info("movie not found", "err", err)
@@ -144,7 +145,7 @@ func (h *MovieHandler) PostMovie(w http.ResponseWriter, r *http.Request) {
 		Duration:    time.Duration(req.Duration) * time.Minute,
 	}
 
-	movie, err := h.Service.CreateMovie(r.Context(), params)
+	movie, err := h.service.CreateMovie(r.Context(), params)
 	if err != nil {
 		log.Error("failed to create movie", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -155,7 +156,7 @@ func (h *MovieHandler) PostMovie(w http.ResponseWriter, r *http.Request) {
 		ID:          movie.ID,
 		Title:       movie.Title,
 		Description: movie.Description,
-		Duration:    int(movie.Duration / time.Second),
+		Duration:    int(movie.Duration / time.Minute),
 		CreatedAt:   movie.CreatedAt,
 	}
 
@@ -212,7 +213,7 @@ func (h *MovieHandler) PatchMovies(w http.ResponseWriter, r *http.Request) {
 		params.Duration = &duration
 	}
 
-	movie, err := h.Service.UpdateMovie(r.Context(), id, params)
+	movie, err := h.service.UpdateMovie(r.Context(), id, params)
 	if err != nil {
 		if errors.Is(err, service.ErrMovieNotFound) {
 			log.Info("movie not found", "err", err)
@@ -228,7 +229,7 @@ func (h *MovieHandler) PatchMovies(w http.ResponseWriter, r *http.Request) {
 		ID:          movie.ID,
 		Title:       movie.Title,
 		Description: movie.Description,
-		Duration:    int(movie.Duration / time.Second),
+		Duration:    int(movie.Duration / time.Minute),
 		CreatedAt:   movie.CreatedAt,
 	}
 
@@ -255,7 +256,7 @@ func (h *MovieHandler) DeleteMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Service.DeleteMovie(r.Context(), int64(id))
+	err = h.service.DeleteMovie(r.Context(), int64(id))
 	if err != nil {
 		if errors.Is(err, service.ErrMovieNotFound) {
 			log.Info("movie not found", "err", err)
@@ -285,7 +286,7 @@ func (h *MovieHandler) GetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	image, err := h.Service.GetImage(r.Context(), id)
+	image, err := h.service.GetImage(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, service.ErrMovieNotFound) {
 			log.Info("movie not found", "err", err)
@@ -351,7 +352,7 @@ func (h *MovieHandler) PutImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Service.PutImage(r.Context(), id, imageBytes)
+	err = h.service.PutImage(r.Context(), id, imageBytes)
 	if err != nil {
 		if errors.Is(err, service.ErrMovieNotFound) {
 			log.Info("movie not found", "err", err)
@@ -381,7 +382,7 @@ func (h *MovieHandler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Service.DeleteImage(r.Context(), id)
+	err = h.service.DeleteImage(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, service.ErrMovieNotFound) {
 			log.Info("movie not found", "err", err)
