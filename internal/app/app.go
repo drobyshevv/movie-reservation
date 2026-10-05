@@ -29,9 +29,15 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
+	hallRepo := postgres.NewHallRepository(pool)
 	movieRepo := postgres.NewMovieRepository(pool)
+
+	hallServ := service.NewHallService(hallRepo)
 	movieServ := service.NewMovieService(movieRepo)
+
 	validator := validator.New()
+
+	hallHand := handler.NewHallHandler(log, hallServ, validator)
 	movieHand := handler.NewMovieHandler(log, movieServ, validator)
 
 	router := chi.NewRouter()
@@ -40,6 +46,17 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	router.Use(logger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	router.Route("/halls", func(r chi.Router) {
+		r.Get("/", hallHand.GetHalls)
+		r.Post("/", hallHand.PostHall)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", hallHand.GetHall)
+			r.Patch("/", hallHand.PatchHall)
+			r.Delete("/", hallHand.DeleteHall)
+		})
+	})
 
 	router.Route("/movies", func(r chi.Router) {
 		r.Get("/", movieHand.GetMovies)
