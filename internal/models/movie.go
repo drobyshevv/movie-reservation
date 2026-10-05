@@ -7,7 +7,7 @@ import (
 type Movie struct {
 	ID          int64
 	Title       string
-	Description string
+	Description *string
 	Duration    time.Duration
 	Image       []byte
 	CreatedAt   time.Time

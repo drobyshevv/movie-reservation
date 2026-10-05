@@ -10,12 +10,12 @@ import (
 )
 
 type MovieService struct {
-	Repository MovieRepository
+	repository MovieRepository
 }
 
 func NewMovieService(repository MovieRepository) *MovieService {
 	return &MovieService{
-		Repository: repository,
+		repository: repository,
 	}
 }
 
@@ -33,7 +33,7 @@ type MovieRepository interface {
 func (s *MovieService) GetMovies(ctx context.Context) ([]models.Movie, error) {
 	const op = "service.GetMovies"
 
-	movies, err := s.Repository.GetAll(ctx)
+	movies, err := s.repository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -44,7 +44,7 @@ func (s *MovieService) GetMovies(ctx context.Context) ([]models.Movie, error) {
 func (s *MovieService) GetMovie(ctx context.Context, id int64) (*models.Movie, error) {
 	const op = "service.GetMovie"
 
-	movie, err := s.Repository.Get(ctx, id)
+	movie, err := s.repository.Get(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, fmt.Errorf("%s: %w", op, ErrMovieNotFound)
@@ -58,7 +58,7 @@ func (s *MovieService) GetMovie(ctx context.Context, id int64) (*models.Movie, e
 func (s *MovieService) CreateMovie(ctx context.Context, params models.CreateMovieParams) (*models.Movie, error) {
 	const op = "service.CreateMovie"
 
-	movie, err := s.Repository.Create(ctx, params)
+	movie, err := s.repository.Create(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -69,7 +69,7 @@ func (s *MovieService) CreateMovie(ctx context.Context, params models.CreateMovi
 func (s *MovieService) UpdateMovie(ctx context.Context, id int64, params models.UpdateMovieParams) (*models.Movie, error) {
 	const op = "service.UpdateMovie"
 
-	movie, err := s.Repository.Update(ctx, id, params)
+	movie, err := s.repository.Update(ctx, id, params)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, fmt.Errorf("%s: %w", op, ErrMovieNotFound)
@@ -83,7 +83,7 @@ func (s *MovieService) UpdateMovie(ctx context.Context, id int64, params models.
 func (s *MovieService) DeleteMovie(ctx context.Context, id int64) error {
 	const op = "service.DeleteMovie"
 
-	err := s.Repository.Delete(ctx, id)
+	err := s.repository.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return fmt.Errorf("%s: %w", op, ErrMovieNotFound)
@@ -97,7 +97,7 @@ func (s *MovieService) DeleteMovie(ctx context.Context, id int64) error {
 func (s *MovieService) GetImage(ctx context.Context, id int64) ([]byte, error) {
 	const op = "service.GetImage"
 
-	image, err := s.Repository.GetImage(ctx, id)
+	image, err := s.repository.GetImage(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, fmt.Errorf("%s: %w", op, ErrMovieNotFound)
@@ -111,7 +111,7 @@ func (s *MovieService) GetImage(ctx context.Context, id int64) ([]byte, error) {
 func (s *MovieService) PutImage(ctx context.Context, id int64, image []byte) error {
 	const op = "service.PutImage"
 
-	err := s.Repository.PutImage(ctx, id, image)
+	err := s.repository.PutImage(ctx, id, image)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return fmt.Errorf("%s: %w", op, ErrMovieNotFound)
@@ -125,7 +125,7 @@ func (s *MovieService) PutImage(ctx context.Context, id int64, image []byte) err
 func (s *MovieService) DeleteImage(ctx context.Context, id int64) error {
 	const op = "service.DeleteImage"
 
-	err := s.Repository.DeleteImage(ctx, id)
+	err := s.repository.DeleteImage(ctx, id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return fmt.Errorf("%s: %w", op, ErrMovieNotFound)
