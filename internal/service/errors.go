@@ -8,4 +8,7 @@ var (
 
 	ErrHallAlreadyExists = errors.New("hall already exists")
 	ErrHallNotFound      = errors.New("hall not found")
+
+	ErrGenreAlreadyExists = errors.New("genre already exists")
+	ErrGenreNotFound      = errors.New("genre not found")
 )

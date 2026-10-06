@@ -30,14 +30,17 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	}
 
 	hallRepo := postgres.NewHallRepository(pool)
+	genreRepo := postgres.NewGenreRepository(pool)
 	movieRepo := postgres.NewMovieRepository(pool)
 
 	hallServ := service.NewHallService(hallRepo)
+	genreServ := service.NewGenreService(genreRepo)
 	movieServ := service.NewMovieService(movieRepo)
 
 	validator := validator.New()
 
 	hallHand := handler.NewHallHandler(log, hallServ, validator)
+	genreHand := handler.NewGenreHandler(log, genreServ, validator)
 	movieHand := handler.NewMovieHandler(log, movieServ, validator)
 
 	router := chi.NewRouter()
@@ -56,6 +59,19 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 			r.Patch("/", hallHand.PatchHall)
 			r.Delete("/", hallHand.DeleteHall)
 		})
+	})
+
+	router.Route("/genres", func(r chi.Router) {
+		r.Get("/", genreHand.GetGenres)
+		r.Post("/", genreHand.PostGenre)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", genreHand.GetGenre)
+			r.Put("/", genreHand.PutGenre)
+			r.Delete("/", genreHand.DeleteGenre)
+			r.Get("/movies", genreHand.GetGenreMovies)
+		})
+
 	})
 
 	router.Route("/movies", func(r chi.Router) {
