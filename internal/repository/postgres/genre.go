@@ -64,7 +64,6 @@ func (r *GenreRepository) GetGenre(id int64) (*models.Genre, error) {
 	}
 
 	return genre, nil
-
 }
 
 func (r *GenreRepository) CreateGenre(typeGenre string) (*models.Genre, error) {
@@ -91,7 +90,6 @@ func (r *GenreRepository) CreateGenre(typeGenre string) (*models.Genre, error) {
 	}
 
 	return genre, nil
-
 }
 
 func (r *GenreRepository) UpdateGenre(id int64, typeGenre string) (*models.Genre, error) {
@@ -118,7 +116,6 @@ func (r *GenreRepository) UpdateGenre(id int64, typeGenre string) (*models.Genre
 	}
 
 	return genre, nil
-
 }
 
 func (r *GenreRepository) DeleteGenre(id int64) error {
@@ -139,7 +136,6 @@ func (r *GenreRepository) DeleteGenre(id int64) error {
 	}
 
 	return nil
-
 }
 
 func (r *GenreRepository) GetGenreMovies(id int64) ([]models.Movie, error) {
@@ -165,5 +161,4 @@ func (r *GenreRepository) GetGenreMovies(id int64) ([]models.Movie, error) {
 	}
 
 	return movies, nil
-
 }

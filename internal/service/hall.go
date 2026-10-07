@@ -43,7 +43,7 @@ func (s *HallService) GetHall(id int64) (*models.Hall, error) {
 	hall, err := s.repo.GetHall(id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
-			return nil, fmt.Errorf("%s: %w", op, err)
+			return nil, fmt.Errorf("%s: %w", op, ErrHallNotFound)
 		}
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (s *HallService) DeleteHall(id int64) error {
 	err := s.repo.DeleteHall(id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
-
+			return fmt.Errorf("%s: %w", op, ErrHallNotFound)
 		}
 		return err
 	}

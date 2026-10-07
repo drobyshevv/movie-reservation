@@ -64,7 +64,6 @@ func (h *HallHandler) GetHalls(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO:  "level":"ERROR","msg":"failed to parse id","op":"handler.GetHall","err":"strconv.ParseInt: parsing \"\": invalid syntax
 func (h *HallHandler) GetHall(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.GetHall"
 	log := h.log.With(
