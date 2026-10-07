@@ -451,7 +451,7 @@ func (h *MovieHandler) PostMovieGenre(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
-	movieIDStr := r.PathValue("movie_id")
+	movieIDStr := r.PathValue("id")
 	movieID, err := strconv.ParseInt(movieIDStr, 10, 64)
 	if err != nil {
 		log.Error("invalid path parameter", "param", "movie_id", "err", err)
@@ -495,7 +495,7 @@ func (h *MovieHandler) DeleteMovieGenre(w http.ResponseWriter, r *http.Request) 
 		slog.String("op", op),
 	)
 
-	movieIDStr := r.PathValue("movie_id")
+	movieIDStr := r.PathValue("id")
 	movieID, err := strconv.ParseInt(movieIDStr, 10, 64)
 	if err != nil {
 		log.Error("invalid path parameter", "param", "movie_id", "err", err)

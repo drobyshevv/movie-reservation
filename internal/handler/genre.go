@@ -2,12 +2,14 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/drobyshevv/movie-reservation/internal/handler/dto"
 	"github.com/drobyshevv/movie-reservation/internal/models"
+	"github.com/drobyshevv/movie-reservation/internal/service"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -202,6 +204,11 @@ func (h *GenreHandler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
 
 	err = h.service.DeleteGenre(id)
 	if err != nil {
+		if errors.Is(err, service.ErrGenreNotFound) {
+			log.Error("genre not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		log.Error("failed to delete genre", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

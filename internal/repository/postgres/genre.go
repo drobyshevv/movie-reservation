@@ -25,7 +25,7 @@ func NewGenreRepository(pool *pgxpool.Pool) *GenreRepository {
 func (r *GenreRepository) GetGenres() ([]models.Genre, error) {
 	const op = "postgres.GetGenres"
 
-	query := `SELECT id, type_genre FROM genres`
+	query := `SELECT id, type AS type_genre FROM genres`
 
 	rows, err := r.pool.Query(context.Background(), query)
 	if err != nil {
@@ -46,7 +46,7 @@ func (r *GenreRepository) GetGenre(id int64) (*models.Genre, error) {
 	const op = "postgres.GetGenre"
 
 	query := `
-	SELECT id, type_genre FROM genres
+	SELECT id, type FROM genres
 	WHERE id = $1
 	`
 
@@ -70,9 +70,9 @@ func (r *GenreRepository) CreateGenre(typeGenre string) (*models.Genre, error) {
 	const op = "postgres.CreateGenre"
 
 	query := `
-	INSERT INTO genres (type_genre)
+	INSERT INTO genres (type)
 	VALUES ($1)
-	RETURNING id, type_genre
+	RETURNING id, type
 	`
 
 	genre := &models.Genre{}
@@ -97,9 +97,9 @@ func (r *GenreRepository) UpdateGenre(id int64, typeGenre string) (*models.Genre
 
 	query := `
 	UPDATE genres
-	SET type_genre = $1
+	SET type = $1
 	WHERE id = $2
-	RETURNING id, type_genre
+	RETURNING id, type
 	`
 
 	genre := &models.Genre{}

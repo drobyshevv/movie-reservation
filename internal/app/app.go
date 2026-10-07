@@ -85,6 +85,9 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 			r.Get("/image", movieHand.GetImage)
 			r.Put("/image", movieHand.PutImage)
 			r.Delete("/image", movieHand.DeleteImage)
+			r.Get("/genres", movieHand.GetMovieGenres)
+			r.Post("/genres/{genre_id}", movieHand.PostMovieGenre)
+			r.Delete("/genres/{genre_id}", movieHand.DeleteMovieGenre)
 		})
 	})
 

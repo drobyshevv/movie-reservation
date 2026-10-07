@@ -233,7 +233,7 @@ func (r *MovieRepository) GetMovieGenres(ctx context.Context, id int64) ([]model
 	const op = "repository.GetMovieGenres"
 
 	query := `
-	SELECT genre.id, genre.type FROM movies
+	SELECT genres.id, genres.type AS type_genre FROM movies
 	JOIN movie_genre
 	ON movie_genre.movie_id = movies.id
 	JOIN genres 
@@ -241,7 +241,7 @@ func (r *MovieRepository) GetMovieGenres(ctx context.Context, id int64) ([]model
 	WHERE movies.id = $1
 	`
 
-	rows, err := r.pool.Query(context.Background(), query)
+	rows, err := r.pool.Query(context.Background(), query, id)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
