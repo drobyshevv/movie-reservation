@@ -2,70 +2,73 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/drobyshevv/movie-reservation/internal/handler/dto"
 	"github.com/drobyshevv/movie-reservation/internal/models"
+	"github.com/drobyshevv/movie-reservation/internal/service"
 	"github.com/go-playground/validator/v10"
 )
 
-type HallHandler struct {
+type GenreHandler struct {
 	log       *slog.Logger
-	service   HallService
+	service   GenreService
 	validator *validator.Validate
 }
 
-func NewHallHandler(log *slog.Logger, service HallService, validator *validator.Validate) *HallHandler {
-	return &HallHandler{
+func NewGenreHandler(log *slog.Logger, service GenreService, validator *validator.Validate) *GenreHandler {
+	return &GenreHandler{
 		log:       log,
 		service:   service,
 		validator: validator,
 	}
 }
 
-type HallService interface {
-	GetHalls() ([]models.Hall, error)
-	GetHall(id int64) (*models.Hall, error)
-	CreateHall(params models.CreateHallParams) (*models.Hall, error)
-	UpdateHall(id int64, params models.UpdateHallParams) (*models.Hall, error)
-	DeleteHall(id int64) error
+type GenreService interface {
+	GetGenres() ([]models.Genre, error)
+	GetGenre(id int64) (*models.Genre, error)
+	CreateGenre(typeGenre string) (*models.Genre, error)
+	UpdateGenre(id int64, typeGenre string) (*models.Genre, error)
+	DeleteGenre(id int64) error
+	GetGenreMovies(id int64) ([]models.Movie, error)
 }
 
-func (h *HallHandler) GetHalls(w http.ResponseWriter, r *http.Request) {
-	const op = "handler.GetHalls"
+func (h *GenreHandler) GetGenres(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.GetGenres"
 	log := h.log.With(
 		slog.String("op", op),
 	)
 
-	halls, err := h.service.GetHalls()
+	genres, err := h.service.GetGenres()
 	if err != nil {
-		log.Error("failed to get halls", "err", err)
+		log.Error("failed to get genres", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	resp := []dto.HallResponse{}
+	resp := []dto.GenreResponse{}
 
-	for _, m := range halls {
-		resp = append(resp, dto.HallResponse{
-			ID:       m.ID,
-			Name:     m.Name,
-			Capacity: m.Capacity,
+	for _, m := range genres {
+		resp = append(resp, dto.GenreResponse{
+			ID:        m.ID,
+			TypeGenre: m.TypeGenre,
 		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }
 
-func (h *HallHandler) GetHall(w http.ResponseWriter, r *http.Request) {
-	const op = "handler.GetHall"
+func (h *GenreHandler) GetGenre(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.GetGenre"
 	log := h.log.With(
 		slog.String("op", op),
 	)
@@ -78,31 +81,32 @@ func (h *HallHandler) GetHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hall, err := h.service.GetHall(id)
+	genre, err := h.service.GetGenre(id)
 	if err != nil {
-		log.Error("failed to get hall", "err", err)
+		log.Error("failed to get genre", "err", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	resp := dto.HallResponse{}
-	resp.FromModel(hall)
+	resp := dto.GenreResponse{}
+	resp.FromModel(genre)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }
 
-func (h *HallHandler) PostHall(w http.ResponseWriter, r *http.Request) {
-	const op = "handler.CreateHall"
+func (h *GenreHandler) PostGenre(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.CreateGenre"
 	log := h.log.With(
 		slog.String("op", op),
 	)
 
-	var req dto.CreateHallRequest
+	var req dto.CreateGenreRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		log.Error("failed to decode request body", "err", err)
@@ -117,27 +121,27 @@ func (h *HallHandler) PostHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := req.ToModel()
-	hall, err := h.service.CreateHall(*params)
+	genre, err := h.service.CreateGenre(req.TypeGenre)
 	if err != nil {
-		log.Error("failed to create hall", "err", err)
+		log.Error("failed to create genre", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	resp := dto.HallResponse{}
-	resp.FromModel(hall)
+	resp := dto.GenreResponse{}
+	resp.FromModel(genre)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }
 
-func (h *HallHandler) PatchHall(w http.ResponseWriter, r *http.Request) {
-	const op = "handler.UpdateHall"
+func (h *GenreHandler) PutGenre(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.PutGenre"
 	log := h.log.With(
 		slog.String("op", op),
 	)
@@ -150,7 +154,7 @@ func (h *HallHandler) PatchHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.UpdateHallRequest
+	var req dto.UpdateGenreRequest
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		log.Error("failed to decode request body", "err", err)
@@ -165,27 +169,27 @@ func (h *HallHandler) PatchHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := req.ToModel()
-	hall, err := h.service.UpdateHall(id, *params)
+	genre, err := h.service.UpdateGenre(id, req.TypeGenre)
 	if err != nil {
-		log.Error("failed to update hall", "err", err)
+		log.Error("failed to update genre", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	resp := dto.HallResponse{}
-	resp.FromModel(hall)
+	resp := dto.GenreResponse{}
+	resp.FromModel(genre)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }
 
-func (h *HallHandler) DeleteHall(w http.ResponseWriter, r *http.Request) {
-	const op = "handler.DeleteHall"
+func (h *GenreHandler) DeleteGenre(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.DeleteGenre"
 	log := h.log.With(
 		slog.String("op", op),
 	)
@@ -198,12 +202,55 @@ func (h *HallHandler) DeleteHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.DeleteHall(id)
+	err = h.service.DeleteGenre(id)
 	if err != nil {
-		log.Error("failed to delete hall", "err", err)
+		if errors.Is(err, service.ErrGenreNotFound) {
+			log.Error("genre not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		log.Error("failed to delete genre", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *GenreHandler) GetGenreMovies(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.GetGenreMovies"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Error("failed to parse id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	movies, err := h.service.GetGenreMovies(id)
+	if err != nil {
+		log.Error("failed to get genre movies", "err", err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	resp := []dto.MovieResponse{}
+
+	for _, m := range movies {
+		movieResp := dto.MovieResponse{}
+		movieResp.FromModel(&m)
+		resp = append(resp, movieResp)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Error("failed to encode response", "err", err)
+	}
 }

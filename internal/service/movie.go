@@ -28,6 +28,9 @@ type MovieRepository interface {
 	GetImage(ctx context.Context, id int64) ([]byte, error)
 	PutImage(ctx context.Context, id int64, image []byte) error
 	DeleteImage(ctx context.Context, id int64) error
+	GetMovieGenres(ctx context.Context, id int64) ([]models.Genre, error)
+	PostMovieGenre(ctx context.Context, movieID int64, genreID int64) error
+	DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error
 }
 
 func (s *MovieService) GetMovies(ctx context.Context) ([]models.Movie, error) {
@@ -134,4 +137,55 @@ func (s *MovieService) DeleteImage(ctx context.Context, id int64) error {
 	}
 
 	return nil
+}
+
+func (s *MovieService) GetMovieGenres(ctx context.Context, id int64) ([]models.Genre, error) {
+	const op = "service.GetMovieGenres"
+
+	genres, err := s.repository.GetMovieGenres(ctx, id)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, fmt.Errorf("%s: %w", op, ErrMovieNotFound)
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return genres, nil
+
+}
+
+func (s *MovieService) PostMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+	const op = "service.PostMovieGenre"
+
+	err := s.repository.PostMovieGenre(ctx, movieID, genreID)
+	if err != nil {
+		if errors.Is(err, repository.ErrMovieNotFound) {
+			return fmt.Errorf("%s: %w", op, ErrMovieNotFound)
+		}
+		if errors.Is(err, repository.ErrGenreNotFound) {
+			return fmt.Errorf("%s: %w", op, ErrGenreNotFound)
+		}
+		if errors.Is(err, repository.ErrConflict) {
+			return fmt.Errorf("%s: %w", op, ErrMovieGenreAlreadyExists)
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+
+}
+
+func (s *MovieService) DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+	const op = "service.DeleteMovieGenre"
+
+	err := s.repository.DeleteMovieGenre(ctx, movieID, genreID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return fmt.Errorf("%s: %w", op, ErrMovieGenreNotFound)
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+
 }

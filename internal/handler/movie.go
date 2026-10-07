@@ -39,6 +39,9 @@ type MovieService interface {
 	GetImage(ctx context.Context, id int64) ([]byte, error)
 	PutImage(ctx context.Context, id int64, image []byte) error
 	DeleteImage(ctx context.Context, id int64) error
+	GetMovieGenres(ctx context.Context, id int64) ([]models.Genre, error)
+	PostMovieGenre(ctx context.Context, movieID int64, genreID int64) error
+	DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error
 }
 
 func (h *MovieHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
@@ -394,5 +397,129 @@ func (h *MovieHandler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *MovieHandler) GetMovieGenres(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.GetMovieGenres"
+
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Error("invalid path parameter", "param", "id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	genres, err := h.service.GetMovieGenres(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, service.ErrMovieNotFound) {
+			http.Error(w, "movie not found", http.StatusNotFound)
+			return
+		}
+		log.Error("internal server error", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp := []dto.GenreResponse{}
+
+	for _, m := range genres {
+		resp = append(resp, dto.GenreResponse{
+			ID:        m.ID,
+			TypeGenre: m.TypeGenre,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Error("failed to encode response", "err", err)
+	}
+}
+
+func (h *MovieHandler) PostMovieGenre(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.PostMovieGenre"
+
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	movieIDStr := r.PathValue("id")
+	movieID, err := strconv.ParseInt(movieIDStr, 10, 64)
+	if err != nil {
+		log.Error("invalid path parameter", "param", "movie_id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	genreIDStr := r.PathValue("genre_id")
+	genreID, err := strconv.ParseInt(genreIDStr, 10, 64)
+	if err != nil {
+		log.Error("invalid path parameter", "param", "genre_id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.PostMovieGenre(r.Context(), movieID, genreID)
+	if err != nil {
+		if errors.Is(err, service.ErrMovieNotFound) {
+			http.Error(w, "movie not found", http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, service.ErrGenreNotFound) {
+			http.Error(w, "genre not found", http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, service.ErrMovieGenreAlreadyExists) {
+			http.Error(w, "movie_genre already exists", http.StatusConflict)
+			return
+		}
+		log.Error("internal server error", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *MovieHandler) DeleteMovieGenre(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.DeleteMovieGenre"
+
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	movieIDStr := r.PathValue("id")
+	movieID, err := strconv.ParseInt(movieIDStr, 10, 64)
+	if err != nil {
+		log.Error("invalid path parameter", "param", "movie_id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	genreIDStr := r.PathValue("genre_id")
+	genreID, err := strconv.ParseInt(genreIDStr, 10, 64)
+	if err != nil {
+		log.Error("invalid path parameter", "param", "genre_id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.DeleteMovieGenre(r.Context(), movieID, genreID)
+	if err != nil {
+		if errors.Is(err, service.ErrMovieGenreNotFound) {
+			http.Error(w, "movie_genre not found", http.StatusNotFound)
+			return
+		}
+		log.Error("internal server error", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }

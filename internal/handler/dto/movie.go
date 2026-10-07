@@ -2,6 +2,8 @@ package dto
 
 import (
 	"time"
+
+	"github.com/drobyshevv/movie-reservation/internal/models"
 )
 
 type UpdateMovieRequest struct {
@@ -24,7 +26,6 @@ type MovieResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-/*
 func (m *MovieResponse) FromModel(movie *models.Movie) {
 	m.ID = movie.ID
 	m.Title = movie.Title
@@ -54,4 +55,3 @@ func (m *UpdateMovieRequest) ToModel() *models.UpdateMovieParams {
 		}(),
 	}
 }
-*/
