@@ -3,6 +3,8 @@ package service
 import "errors"
 
 var (
+	ErrSeatNotFound = errors.New("seat not found")
+
 	ErrMovieAlreadyExists = errors.New("movie already exists")
 	ErrMovieNotFound      = errors.New("movie not found")
 
