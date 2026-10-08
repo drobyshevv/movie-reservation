@@ -1,17 +1,14 @@
 package models
 
 type Hall struct {
-	ID       int64
-	Name     string
-	Capacity int
+	ID   int64
+	Name string
 }
 
 type CreateHallParams struct {
-	Name     string
-	Capacity int
+	Name string
 }
 
 type UpdateHallParams struct {
-	Name     *string
-	Capacity *int
+	Name *string
 }

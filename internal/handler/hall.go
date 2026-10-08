@@ -50,9 +50,8 @@ func (h *HallHandler) GetHalls(w http.ResponseWriter, r *http.Request) {
 
 	for _, m := range halls {
 		resp = append(resp, dto.HallResponse{
-			ID:       m.ID,
-			Name:     m.Name,
-			Capacity: m.Capacity,
+			ID:   m.ID,
+			Name: m.Name,
 		})
 	}
 
@@ -136,7 +135,7 @@ func (h *HallHandler) PostHall(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *HallHandler) PatchHall(w http.ResponseWriter, r *http.Request) {
+func (h *HallHandler) PutHall(w http.ResponseWriter, r *http.Request) {
 	const op = "handler.UpdateHall"
 	log := h.log.With(
 		slog.String("op", op),

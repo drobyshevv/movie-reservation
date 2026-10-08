@@ -25,7 +25,7 @@ func NewHallRepository(pool *pgxpool.Pool) *HallRepository {
 func (r *HallRepository) GetHalls() ([]models.Hall, error) {
 	const op = "postgres.GetHalls"
 
-	query := `SELECT id, name, capacity FROM halls`
+	query := `SELECT id, name FROM halls`
 
 	rows, err := r.pool.Query(context.Background(), query)
 	if err != nil {
@@ -44,7 +44,7 @@ func (r *HallRepository) GetHalls() ([]models.Hall, error) {
 func (r *HallRepository) GetHall(id int64) (*models.Hall, error) {
 	const op = "postgres.GetHall"
 	query := `
-	SELECT id, name, capacity FROM halls
+	SELECT id, name FROM halls
 	WHERE id = $1
 	`
 
@@ -53,7 +53,6 @@ func (r *HallRepository) GetHall(id int64) (*models.Hall, error) {
 	err := r.pool.QueryRow(context.Background(), query, id).Scan(
 		&hall.ID,
 		&hall.Name,
-		&hall.Capacity,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -69,16 +68,15 @@ func (r *HallRepository) CreateHall(params models.CreateHallParams) (*models.Hal
 	const op = "postgres.CreateHall"
 
 	query := `
-	INSERT INTO halls (name, capacity)
-	VALUES ($1, $2)
-	RETURNING id, name, capacity
+	INSERT INTO halls (name)
+	VALUES ($1)
+	RETURNING id, name
 	`
 
 	hall := &models.Hall{}
-	err := r.pool.QueryRow(context.Background(), query, params.Name, params.Capacity).Scan(
+	err := r.pool.QueryRow(context.Background(), query, params.Name).Scan(
 		&hall.ID,
 		&hall.Name,
-		&hall.Capacity,
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -97,17 +95,15 @@ func (r *HallRepository) UpdateHall(id int64, params models.UpdateHallParams) (*
 	query := `
 	UPDATE halls
 	SET 
-	    name = COALESCE($1, name),
-	    capacity = COALESCE($2, capacity)
-	WHERE id = $3
-	RETURNING id, name, capacity
+	    name = COALESCE($1, name)
+	WHERE id = $2
+	RETURNING id, name
 	`
 
 	hall := &models.Hall{}
-	err := r.pool.QueryRow(context.Background(), query, params.Name, params.Capacity, id).Scan(
+	err := r.pool.QueryRow(context.Background(), query, params.Name, id).Scan(
 		&hall.ID,
 		&hall.Name,
-		&hall.Capacity,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -56,7 +56,7 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", hallHand.GetHall)
-			r.Patch("/", hallHand.PatchHall)
+			r.Put("/", hallHand.PutHall)
 			r.Delete("/", hallHand.DeleteHall)
 		})
 	})
