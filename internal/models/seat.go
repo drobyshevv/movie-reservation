@@ -8,6 +8,5 @@ type Seat struct {
 }
 
 type CreateSeatParams struct {
-	HallID int64
-	Rows   map[string]int16
+	Rows map[string]int16
 }

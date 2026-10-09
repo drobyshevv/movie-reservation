@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/drobyshevv/movie-reservation/internal/handler/dto"
 	"github.com/drobyshevv/movie-reservation/internal/models"
+	"github.com/drobyshevv/movie-reservation/internal/service"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -26,11 +29,14 @@ func NewHallHandler(log *slog.Logger, service HallService, validator *validator.
 }
 
 type HallService interface {
-	GetHalls() ([]models.Hall, error)
-	GetHall(id int64) (*models.Hall, error)
-	CreateHall(params models.CreateHallParams) (*models.Hall, error)
-	UpdateHall(id int64, params models.UpdateHallParams) (*models.Hall, error)
-	DeleteHall(id int64) error
+	GetHalls(ctx context.Context) ([]models.Hall, error)
+	GetHall(ctx context.Context, id int64) (*models.Hall, error)
+	CreateHall(ctx context.Context, params models.CreateHallParams) (*models.Hall, error)
+	UpdateHall(ctx context.Context, id int64, params models.UpdateHallParams) (*models.Hall, error)
+	DeleteHall(ctx context.Context, id int64) error
+	GetHallSeats(ctx context.Context, id int64) ([]models.Seat, error)
+	CreateHallSeats(ctx context.Context, id int64, params models.CreateSeatParams) ([]models.Seat, error)
+	DeleteHallSeats(ctx context.Context, id int64) error
 }
 
 func (h *HallHandler) GetHalls(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +45,7 @@ func (h *HallHandler) GetHalls(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
-	halls, err := h.service.GetHalls()
+	halls, err := h.service.GetHalls(r.Context())
 	if err != nil {
 		log.Error("failed to get halls", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -77,10 +83,15 @@ func (h *HallHandler) GetHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hall, err := h.service.GetHall(id)
+	hall, err := h.service.GetHall(r.Context(), id)
 	if err != nil {
+		if errors.Is(err, service.ErrHallNotFound) {
+			log.Error("hall not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		log.Error("failed to get hall", "err", err)
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -117,8 +128,13 @@ func (h *HallHandler) PostHall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := req.ToModel()
-	hall, err := h.service.CreateHall(*params)
+	hall, err := h.service.CreateHall(r.Context(), *params)
 	if err != nil {
+		if errors.Is(err, service.ErrHallAlreadyExists) {
+			log.Error("hall already exists", "err", err)
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
 		log.Error("failed to create hall", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -165,8 +181,13 @@ func (h *HallHandler) PutHall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := req.ToModel()
-	hall, err := h.service.UpdateHall(id, *params)
+	hall, err := h.service.UpdateHall(r.Context(), id, *params)
 	if err != nil {
+		if errors.Is(err, service.ErrHallNotFound) {
+			log.Error("hall not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		log.Error("failed to update hall", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -197,8 +218,164 @@ func (h *HallHandler) DeleteHall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.DeleteHall(id)
+	err = h.service.DeleteHall(r.Context(), id)
 	if err != nil {
+		if errors.Is(err, service.ErrHallNotFound) {
+			log.Error("hall not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		log.Error("failed to delete hall", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *HallHandler) GetHallSeats(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.GetHallSeats"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Error("failed to parse id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	seats, err := h.service.GetHallSeats(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, service.ErrHallNotFound) {
+			log.Error("hall not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		log.Error("failed to get hall seats", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp := []dto.HallSeatResponse{}
+	for _, m := range seats {
+		resp = append(resp, dto.HallSeatResponse{
+			ID:     m.ID,
+			Row:    m.Row,
+			Number: m.Number,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Error("failed to encode response", "err", err)
+	}
+}
+
+func (h *HallHandler) PostHallSeats(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.CreateHallSeats"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Error("failed to parse id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var req []dto.CreateHallSeatsRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		log.Error("failed to decode request body", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.validator.Struct(req)
+	if err != nil {
+		log.Error("validation failed", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	params := models.CreateSeatParams{
+		Rows: make(map[string]int16),
+	}
+	for _, seat := range req {
+		if _, ok := params.Rows[seat.Row]; ok {
+			log.Info("duplicate row in request", "row", seat.Row)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		params.Rows[seat.Row] = seat.Number
+	}
+	seats, err := h.service.CreateHallSeats(r.Context(), id, params)
+	if err != nil {
+		if errors.Is(err, service.ErrHallNotFound) {
+			log.Error("hall not found", "err", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, service.ErrSeatAlreadyExists) {
+			log.Error("seats already exists", "err", err)
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+		log.Error("failed to create hall seats", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp := []dto.HallSeatResponse{}
+	for _, m := range seats {
+		resp = append(resp, dto.HallSeatResponse{
+			ID:     m.ID,
+			Row:    m.Row,
+			Number: m.Number,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Error("failed to encode response", "err", err)
+	}
+}
+
+func (h *HallHandler) DeleteHallSeats(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.CreateHallSeats"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		log.Error("failed to parse id", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.DeleteHallSeats(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, service.ErrHallNotFound) {
+			log.Error("hall not found", "err", err)
+			http.Error(w, "hall not found", http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, service.ErrSeatNotFound) {
+			log.Error("seats not found", "err", err)
+			http.Error(w, "seats not found", http.StatusNotFound)
+			return
+		}
 		log.Error("failed to delete hall", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
