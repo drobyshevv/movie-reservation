@@ -7,6 +7,7 @@ type Seat struct {
 	Number int16
 }
 
-type CreateSeatParams struct {
-	Rows map[string]int16
+type CreateHallSeatsParams struct {
+	Row    string
+	Number int16
 }

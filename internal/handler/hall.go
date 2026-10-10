@@ -35,7 +35,7 @@ type HallService interface {
 	UpdateHall(ctx context.Context, id int64, params models.UpdateHallParams) (*models.Hall, error)
 	DeleteHall(ctx context.Context, id int64) error
 	GetHallSeats(ctx context.Context, id int64) ([]models.Seat, error)
-	CreateHallSeats(ctx context.Context, id int64, params models.CreateSeatParams) ([]models.Seat, error)
+	CreateHallSeats(ctx context.Context, id int64, params []models.CreateHallSeatsParams) ([]models.Seat, error)
 	DeleteHallSeats(ctx context.Context, id int64) error
 }
 
@@ -305,17 +305,7 @@ func (h *HallHandler) PostHallSeats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := models.CreateSeatParams{
-		Rows: make(map[string]int16),
-	}
-	for _, seat := range req {
-		if _, ok := params.Rows[seat.Row]; ok {
-			log.Info("duplicate row in request", "row", seat.Row)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		params.Rows[seat.Row] = seat.Number
-	}
+	params := dto.MapCreateHallSeatsRequest(req)
 	seats, err := h.service.CreateHallSeats(r.Context(), id, params)
 	if err != nil {
 		if errors.Is(err, service.ErrHallNotFound) {
@@ -324,6 +314,11 @@ func (h *HallHandler) PostHallSeats(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if errors.Is(err, service.ErrSeatAlreadyExists) {
+			log.Error("seats already exists", "err", err)
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+		if errors.Is(err, service.ErrHallHasSessions) {
 			log.Error("seats already exists", "err", err)
 			w.WriteHeader(http.StatusConflict)
 			return
