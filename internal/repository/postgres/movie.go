@@ -294,11 +294,11 @@ func (r *MovieRepository) DeleteMovieGenre(ctx context.Context, movieID int64, g
 
 	tag, err := r.pool.Exec(ctx, query, movieID, genreID)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	if tag.RowsAffected() == 0 {
-		return repository.ErrNotFound
+		return fmt.Errorf("%s: %w", op, repository.ErrNotFound)
 	}
 
 	return nil

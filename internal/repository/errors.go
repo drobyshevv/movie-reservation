@@ -8,4 +8,10 @@ var (
 
 	ErrGenreNotFound error = errors.New("genre  not found")
 	ErrMovieNotFound error = errors.New("movie not found")
+	ErrSeatNotFound  error = errors.New("seats not found")
+	ErrHallNotFound  error = errors.New("hall not found")
+
+	ErrSessionExists error = errors.New("session exists")
+
+	ErrUnexpectedSeatsCount = errors.New("unexpected number of created seats")
 )

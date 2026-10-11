@@ -13,7 +13,7 @@ CREATE INDEX idx_bookings_user_id ON bookings (user_id);
 CREATE INDEX idx_bookings_user_created ON bookings (user_id, created_at DESC);
 
 CREATE UNIQUE INDEX idx_bookings_active_seat
-ON bookings (session_id, seat_number)
+ON bookings (session_id, seat_id)
 WHERE status IN ('pending', 'confirmed');
 
 -- +goose Down
