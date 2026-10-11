@@ -58,6 +58,11 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 			r.Get("/", hallHand.GetHall)
 			r.Put("/", hallHand.PutHall)
 			r.Delete("/", hallHand.DeleteHall)
+			r.Route("/seats", func(r chi.Router) {
+				r.Get("/", hallHand.GetHallSeats)
+				r.Post("/", hallHand.PostHallSeats)
+				r.Delete("/", hallHand.DeleteHallSeats)
+			})
 		})
 	})
 

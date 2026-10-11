@@ -298,11 +298,13 @@ func (h *HallHandler) PostHallSeats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.validator.Struct(req)
-	if err != nil {
-		log.Error("validation failed", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	for _, item := range req {
+		err = h.validator.Struct(item)
+		if err != nil {
+			log.Error("validation failed", "err", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	}
 
 	params := dto.MapCreateHallSeatsRequest(req)

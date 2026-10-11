@@ -20,7 +20,7 @@ func MapCreateHallSeatsRequest(req []CreateHallSeatsRequest) []models.CreateHall
 		for n := int16(1); n <= r.Number; n++ {
 			seats = append(seats, models.CreateHallSeatsParams{
 				Row:    r.Row,
-				Number: r.Number,
+				Number: n,
 			})
 		}
 	}

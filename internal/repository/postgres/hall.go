@@ -142,7 +142,7 @@ func (r *HallRepository) GetHallSeats(ctx context.Context, id int64) ([]models.S
 	WHERE hall_id = $1
 	`
 
-	rows, err := r.pool.Query(ctx, query)
+	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -165,7 +165,7 @@ func (r *HallRepository) CreateHallSeats(ctx context.Context, id int64, params [
 		FROM halls
 		WHERE id = $1
 		FOR UPDATE
-		`).Scan(&hallID)
+		`, id).Scan(&hallID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return nil, fmt.Errorf("%s: %w", op, repository.ErrHallNotFound)
@@ -176,9 +176,9 @@ func (r *HallRepository) CreateHallSeats(ctx context.Context, id int64, params [
 		var hasSession bool
 		err = tx.QueryRow(ctx, `
 		SELECT EXISTS (
-		SELECT * FROM sessions WHERE halls_id = $1
-		)
-		`, id).Scan(&hasSession)
+			SELECT * FROM sessions WHERE hall_id = $1
+			)
+			`, id).Scan(&hasSession)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -189,7 +189,7 @@ func (r *HallRepository) CreateHallSeats(ctx context.Context, id int64, params [
 		var hasSeats bool
 		err = tx.QueryRow(ctx, `
 		SELECT EXISTS (
-		SELECT * FROM seats WHERE halls_id = $1
+		SELECT * FROM seats WHERE hall_id = $1
 		)
 		`, id).Scan(&hasSeats)
 		if err != nil {
@@ -280,7 +280,7 @@ func makeQueryHallSeats(id int64, params []models.CreateHallSeatsParams) (string
 		placeholders = append(placeholders, phRow)
 	}
 	query += strings.Join(placeholders, ", ")
-	query += "RETURNING id, hall_id, row, number;"
+	query += " RETURNING id, hall_id, row, number;"
 
 	return query, args
 }
