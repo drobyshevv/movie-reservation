@@ -23,11 +23,10 @@ func NewSessionHandler(log *slog.Logger, service SessionService, validator *vali
 }
 
 type SessionService interface {
-	GetSessions(ctx context.Context) ([]models.Session, error)
-	GetSession(ctx context.Context, id int64) (models.Session, error)
-	CreateSession(ctx context.Context, hallID int64, movieID int64, params models.CreateSessionParams) ([]models.Session, error)
+	GetSessions(ctx context.Context) ([]models.SessionWithDetails, error)
+	GetSession(ctx context.Context, id int64) (models.SessionWithDetails, error)
+	CreateSession(ctx context.Context, hallID int64, movieID int64, params models.CreateSessionParams) (models.Session, error)
 	UpdateSession(ctx context.Context, id int64, params models.UpdateSessionParams) (models.Session, error)
 	DeleteSession(ctx context.Context, id int64) error
+	UpdateSessionStatus(ctx context.Context, id int64, status models.StatusType) error
 }
-
-//TODO Если меняется StartAt, а EndAt не передан — пересчитывать EndAt автоматически или оставить старый?
