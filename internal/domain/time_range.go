@@ -1,4 +1,4 @@
-package models
+package domain
 
 import (
 	"fmt"
@@ -21,3 +21,6 @@ func NewTimeRange(start, end time.Time) (TimeRange, error) {
 		end:   end,
 	}, nil
 }
+
+func (t TimeRange) Start() time.Time { return t.start }
+func (t TimeRange) End() time.Time   { return t.end }

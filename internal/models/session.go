@@ -1,15 +1,19 @@
 package models
 
-import "time"
+import (
+	"time"
 
-type CreateSessionParams struct {
+	"github.com/drobyshevv/movie-reservation/internal/domain"
+)
+
+type CreateSessionCommand struct {
 	HallID  int64
 	MovieID int64
 	StartAt time.Time
 	EndAt   *time.Time
 }
 
-type UpdateSessionParams struct {
+type UpdateSessionCommand struct {
 	HallID  *int64
 	MovieID *int64
 	StartAt *time.Time
@@ -18,7 +22,7 @@ type UpdateSessionParams struct {
 
 type SessionWithDetails struct {
 	ID        int64
-	Status    StatusType
+	Status    domain.StatusType
 	StartAt   time.Time
 	EndAt     time.Time
 	CreatedAt time.Time
