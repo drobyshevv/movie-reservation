@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/drobyshevv/movie-reservation/internal/models"
 	"github.com/drobyshevv/movie-reservation/internal/repository"
@@ -255,7 +256,7 @@ func (r *MovieRepository) GetMovieGenres(ctx context.Context, id int64) ([]model
 	return genres, nil
 }
 
-func (r *MovieRepository) PostMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+func (r *MovieRepository) UpdateMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
 	const op = "repository.PostMovieGenre"
 
 	query := `
@@ -302,4 +303,26 @@ func (r *MovieRepository) DeleteMovieGenre(ctx context.Context, movieID int64, g
 	}
 
 	return nil
+}
+
+func (r *MovieRepository) GetDuration(ctx context.Context, movieID int64) (time.Duration, error) {
+	const op = "repository.GetDuration"
+
+	query := `
+		SELECT (EXTRACT(EPOCH FROM duration) * 1000000)::BIGINT
+		FROM movies
+		WHERE id = $1
+	`
+
+	var microseconds int64
+
+	err := r.pool.QueryRow(ctx, query, movieID).Scan(&microseconds)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, repository.ErrMovieNotFound
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return time.Duration(microseconds) * time.Microsecond, nil
 }

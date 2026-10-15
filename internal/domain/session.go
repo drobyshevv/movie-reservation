@@ -38,27 +38,54 @@ func NewSession(
 	}, nil
 }
 
-func (s *Session) Cancel() error {
-	if s.status == StatusCancelled {
-		return errors.New("session is already cancelled")
+func RestoreSession(
+	id, hallID, movieID int64,
+	status StatusType,
+	period TimeRange,
+	createdAt time.Time,
+) (Session, error) {
+	if id <= 0 || hallID <= 0 || movieID <= 0 {
+		return Session{}, errors.New("invalid session IDs")
 	}
-	s.status = StatusCancelled
-	return nil
+
+	return Session{
+		id:        id,
+		hallID:    hallID,
+		movieID:   movieID,
+		status:    status,
+		period:    period,
+		createdAt: createdAt,
+	}, nil
 }
 
-func (s *Session) Reschedule() error {
-	if s.status != StatusCancelled {
-		return errors.New("only cancelled sessions can be scheduled")
-	}
-	s.status = StatusScheduled
-	return nil
-}
-
-func (s *Session) Activate() error {
+func (s *Session) ChangePeriod(period TimeRange) error {
 	if s.status != StatusScheduled {
-		return errors.New("only scheduled sessions can be activated")
+		return errors.New("only scheduled sessions can be changed")
 	}
-	s.status = StatusActive
+
+	s.period = period
+	return nil
+}
+
+func (s *Session) ChangeStatus(status StatusType) error {
+	switch status {
+	case StatusScheduled:
+		if s.status != StatusCancelled {
+			return errors.New("only cancelled sessions can be scheduled")
+		}
+	case StatusActive:
+		if s.status != StatusScheduled {
+			return errors.New("only scheduled sessions can be activated")
+		}
+	case StatusCancelled:
+		if s.status == StatusCancelled {
+			return errors.New("session is already cancelled")
+		}
+	default:
+		return errors.New("invalid session status")
+	}
+
+	s.status = status
 	return nil
 }
 

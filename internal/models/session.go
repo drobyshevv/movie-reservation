@@ -6,16 +6,15 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 )
 
-type CreateSessionCommand struct {
+type CreateSessionParams struct {
 	HallID  int64
 	MovieID int64
 	StartAt time.Time
 	EndAt   *time.Time
 }
 
-type UpdateSessionCommand struct {
-	HallID  *int64
-	MovieID *int64
+type UpdateSessionParams struct {
+	Status  *domain.StatusType
 	StartAt *time.Time
 	EndAt   *time.Time
 }

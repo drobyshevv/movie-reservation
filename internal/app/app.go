@@ -32,16 +32,19 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	hallRepo := postgres.NewHallRepository(pool)
 	genreRepo := postgres.NewGenreRepository(pool)
 	movieRepo := postgres.NewMovieRepository(pool)
+	sessionRepo := postgres.NewSessionRepository(pool)
 
 	hallServ := service.NewHallService(hallRepo)
 	genreServ := service.NewGenreService(genreRepo)
 	movieServ := service.NewMovieService(movieRepo)
+	sessionServ := service.NewSessionService(sessionRepo, movieRepo)
 
 	validator := validator.New()
 
 	hallHand := handler.NewHallHandler(log, hallServ, validator)
 	genreHand := handler.NewGenreHandler(log, genreServ, validator)
 	movieHand := handler.NewMovieHandler(log, movieServ, validator)
+	sessionHand := handler.NewSessionHandler(log, sessionServ, validator)
 
 	router := chi.NewRouter()
 
@@ -93,6 +96,17 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 			r.Get("/genres", movieHand.GetMovieGenres)
 			r.Post("/genres/{genre_id}", movieHand.PostMovieGenre)
 			r.Delete("/genres/{genre_id}", movieHand.DeleteMovieGenre)
+		})
+	})
+
+	router.Route("/sessions", func(r chi.Router) {
+		r.Get("/", sessionHand.GetSessions)
+		r.Post("/", sessionHand.CreateSession)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", sessionHand.GetSession)
+			r.Patch("/", sessionHand.UpdateSession)
+			r.Delete("/", sessionHand.DeleteSession)
 		})
 	})
 

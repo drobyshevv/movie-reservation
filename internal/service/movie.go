@@ -29,7 +29,7 @@ type MovieRepository interface {
 	PutImage(ctx context.Context, id int64, image []byte) error
 	DeleteImage(ctx context.Context, id int64) error
 	GetMovieGenres(ctx context.Context, id int64) ([]models.Genre, error)
-	PostMovieGenre(ctx context.Context, movieID int64, genreID int64) error
+	UpdateMovieGenre(ctx context.Context, movieID int64, genreID int64) error
 	DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error
 }
 
@@ -157,7 +157,7 @@ func (s *MovieService) GetMovieGenres(ctx context.Context, id int64) ([]models.G
 func (s *MovieService) PostMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
 	const op = "service.PostMovieGenre"
 
-	err := s.repository.PostMovieGenre(ctx, movieID, genreID)
+	err := s.repository.UpdateMovieGenre(ctx, movieID, genreID)
 	if err != nil {
 		if errors.Is(err, repository.ErrMovieNotFound) {
 			return fmt.Errorf("%s: %w", op, ErrMovieNotFound)
