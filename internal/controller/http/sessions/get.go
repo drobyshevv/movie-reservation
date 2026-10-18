@@ -26,7 +26,7 @@ func (h *SessionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := h.service.GetSession(r.Context(), id)
+	session, err := h.usecase.GetSession(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, errs.ErrSessionNotFound) {
 			log.Info("session not found", "err", err)

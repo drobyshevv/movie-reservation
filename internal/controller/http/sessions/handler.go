@@ -11,19 +11,19 @@ import (
 
 type SessionHandler struct {
 	log       *slog.Logger
-	service   SessionService
+	usecase   SessionUseCase
 	validator *validator.Validate
 }
 
-func NewSessionHandler(log *slog.Logger, service SessionService, validator *validator.Validate) *SessionHandler {
+func NewSessionHandler(log *slog.Logger, usecase SessionUseCase, validator *validator.Validate) *SessionHandler {
 	return &SessionHandler{
 		log:       log,
-		service:   service,
+		usecase:   usecase,
 		validator: validator,
 	}
 }
 
-type SessionService interface {
+type SessionUseCase interface {
 	GetSessions(ctx context.Context) ([]models.SessionWithDetails, error)
 	GetSession(ctx context.Context, id int64) (*models.SessionWithDetails, error)
 	CreateSession(ctx context.Context, params models.CreateSessionInput) (*domain.Session, error)

@@ -10,8 +10,8 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/handler/dto"
 )
 
-func (h *SessionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	const op = "http.sessions.Create"
+func (h *SessionHandler) Post(w http.ResponseWriter, r *http.Request) {
+	const op = "http.sessions.Post"
 
 	log := h.log.With(
 		slog.String("op", op),
@@ -34,7 +34,7 @@ func (h *SessionHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	params := req.ToModel()
 
-	session, err := h.service.CreateSession(r.Context(), params)
+	session, err := h.usecase.CreateSession(r.Context(), params)
 	if err != nil {
 		if errors.Is(err, errs.ErrHallNotFound) {
 			log.Error("hall not found", "err", err)

@@ -15,7 +15,7 @@ func (h *SessionHandler) List(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
-	sessions, err := h.service.GetSessions(r.Context())
+	sessions, err := h.usecase.GetSessions(r.Context())
 	if err != nil {
 		log.Error("failed to get halls", "err", err)
 		w.WriteHeader(http.StatusBadRequest)

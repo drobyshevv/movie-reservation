@@ -24,7 +24,7 @@ func (h *SessionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.DeleteSession(r.Context(), id)
+	err = h.usecase.DeleteSession(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, errs.ErrSessionNotFound) {
 			log.Error("session not found", "err", err)

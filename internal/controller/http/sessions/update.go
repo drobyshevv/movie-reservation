@@ -52,7 +52,7 @@ func (h *SessionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	params := req.ToModel()
 
-	session, err := h.service.UpdateSession(r.Context(), id, params)
+	session, err := h.usecase.UpdateSession(r.Context(), id, params)
 	if err != nil {
 		if errors.Is(err, errs.ErrSessionNotFound) {
 			log.Error("session not found", "err", err)
