@@ -32,8 +32,8 @@ func NewSessionHandler(log *slog.Logger, service SessionService, validator *vali
 type SessionService interface {
 	GetSessions(ctx context.Context) ([]models.SessionWithDetails, error)
 	GetSession(ctx context.Context, id int64) (*models.SessionWithDetails, error)
-	CreateSession(ctx context.Context, params models.CreateSessionParams) (*domain.Session, error)
-	UpdateSession(ctx context.Context, id int64, params models.UpdateSessionParams) (*domain.Session, error)
+	CreateSession(ctx context.Context, params models.CreateSessionInput) (*domain.Session, error)
+	UpdateSession(ctx context.Context, id int64, params models.UpdateSessionInput) (*domain.Session, error)
 	DeleteSession(ctx context.Context, id int64) error
 }
 

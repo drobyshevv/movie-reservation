@@ -60,7 +60,7 @@ func (s *SessionService) GetSession(ctx context.Context, id int64) (*models.Sess
 	return session, nil
 }
 
-func (s *SessionService) CreateSession(ctx context.Context, params models.CreateSessionParams) (*domain.Session, error) {
+func (s *SessionService) CreateSession(ctx context.Context, params models.CreateSessionInput) (*domain.Session, error) {
 	const op = "service.CreateSession"
 
 	var endAt time.Time
@@ -108,7 +108,7 @@ func (s *SessionService) CreateSession(ctx context.Context, params models.Create
 
 }
 
-func (s *SessionService) UpdateSession(ctx context.Context, id int64, params models.UpdateSessionParams) (*domain.Session, error) {
+func (s *SessionService) UpdateSession(ctx context.Context, id int64, params models.UpdateSessionInput) (*domain.Session, error) {
 	const op = "service.UpdateSession"
 
 	session, err := s.repository.UpdateSession(ctx, id, func(session *domain.Session) error {

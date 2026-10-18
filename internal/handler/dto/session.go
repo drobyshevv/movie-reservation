@@ -75,8 +75,8 @@ func SessionWithDetailsListFromModels(
 	return resp
 }
 
-func (s *CreateSessionRequest) ToModel() models.CreateSessionParams {
-	return models.CreateSessionParams{
+func (s *CreateSessionRequest) ToModel() models.CreateSessionInput {
+	return models.CreateSessionInput{
 		HallID:  s.HallID,
 		MovieID: s.MovieID,
 		StartAt: s.StartAt,
@@ -94,8 +94,8 @@ func (s *SessionResponse) FromModel(session *domain.Session) {
 	s.CreatedAt = session.CreatedAt()
 }
 
-func (s *UpdateSessionRequest) ToModel() models.UpdateSessionParams {
-	return models.UpdateSessionParams{
+func (s *UpdateSessionRequest) ToModel() models.UpdateSessionInput {
+	return models.UpdateSessionInput{
 		Status:  s.Status,
 		StartAt: s.StartAt,
 		EndAt:   s.EndAt,
