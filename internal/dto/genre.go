@@ -25,7 +25,7 @@ type GenreMovieResponse struct {
 
 func (g *GenreResponse) FromModel(m *domain.Genre) {
 	g.ID = m.ID()
-	g.TypeGenre = m.Name()
+	g.TypeGenre = m.TypeGenre()
 }
 
 func (g *CreateGenreRequest) ToModel() string {

@@ -11,8 +11,8 @@ var (
 )
 
 type Genre struct {
-	id   int64
-	name string
+	id        int64
+	typeGenre string
 }
 
 func NewGenre(typeGenre string) (Genre, error) {
@@ -26,7 +26,7 @@ func NewGenre(typeGenre string) (Genre, error) {
 		return Genre{}, ErrTypeGenreTooLong
 	}
 
-	return Genre{name: typeGenre}, nil
+	return Genre{typeGenre: typeGenre}, nil
 }
 
 func RestoreGenre(id int64, typeGenre string) (Genre, error) {
@@ -54,9 +54,9 @@ func (g *Genre) ChangeType(typeGenre string) error {
 		return ErrTypeGenreTooLong
 	}
 
-	g.name = typeGenre
+	g.typeGenre = typeGenre
 	return nil
 }
 
-func (g Genre) ID() int64    { return g.id }
-func (g Genre) Name() string { return g.name }
+func (g Genre) ID() int64         { return g.id }
+func (g Genre) TypeGenre() string { return g.typeGenre }

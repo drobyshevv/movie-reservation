@@ -7,7 +7,7 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 )
 
-func (s *GenreUseCase) Update(ctx context.Context, id int64, typeGenre string) (*domain.Genre, error) {
+func (u *GenreUseCase) Update(ctx context.Context, id int64, typeGenre string) (*domain.Genre, error) {
 	const op = "usecase.genres.Update"
 
 	genre, err := domain.NewGenre(typeGenre)
@@ -15,7 +15,7 @@ func (s *GenreUseCase) Update(ctx context.Context, id int64, typeGenre string) (
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	genreOutput, err := s.repository.Update(ctx, id, genre)
+	genreOutput, err := u.repository.Update(ctx, id, genre)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

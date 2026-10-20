@@ -26,7 +26,7 @@ func (h *GenreHandler) List(w http.ResponseWriter, r *http.Request) {
 	for _, m := range genres {
 		resp = append(resp, dto.GenreResponse{
 			ID:        m.ID(),
-			TypeGenre: m.Name(),
+			TypeGenre: m.TypeGenre(),
 		})
 	}
 

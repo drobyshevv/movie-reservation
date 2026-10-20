@@ -7,7 +7,7 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 )
 
-func (s *GenreUseCase) Create(ctx context.Context, typeGenre string) (*domain.Genre, error) {
+func (u *GenreUseCase) Create(ctx context.Context, typeGenre string) (*domain.Genre, error) {
 	const op = "usecase.genres.Create"
 
 	genre, err := domain.NewGenre(typeGenre)
@@ -15,7 +15,7 @@ func (s *GenreUseCase) Create(ctx context.Context, typeGenre string) (*domain.Ge
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	genreOutput, err := s.repository.Create(ctx, genre)
+	genreOutput, err := u.repository.Create(ctx, genre)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

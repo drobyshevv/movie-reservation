@@ -32,9 +32,9 @@ func (h *SessionHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := req.ToModel()
+	input := req.ToModel()
 
-	session, err := h.usecase.CreateSession(r.Context(), params)
+	session, err := h.usecase.CreateSession(r.Context(), input)
 	if err != nil {
 		if errors.Is(err, errs.ErrHallNotFound) {
 			log.Error("hall not found", "err", err)

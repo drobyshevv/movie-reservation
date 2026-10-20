@@ -8,8 +8,8 @@ import (
 
 	"github.com/drobyshevv/movie-reservation/internal/adapter/postgres"
 	"github.com/drobyshevv/movie-reservation/internal/domain"
-	"github.com/drobyshevv/movie-reservation/internal/models"
-	"github.com/drobyshevv/movie-reservation/internal/repository"
+	errs "github.com/drobyshevv/movie-reservation/internal/errors"
+	sessionuc "github.com/drobyshevv/movie-reservation/internal/usecase/sessions"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,8 +25,8 @@ func NewSessionRepository(pool *pgxpool.Pool) *SessionRepository {
 	}
 }
 
-func (r *SessionRepository) Get(ctx context.Context) ([]models.SessionWithDetails, error) {
-	const op = "repository.Get"
+func (r *SessionRepository) List(ctx context.Context) ([]sessionuc.SessionWithDetails, error) {
+	const op = "postgres.sessions.List"
 
 	query := `
 	SELECT 
@@ -52,10 +52,10 @@ func (r *SessionRepository) Get(ctx context.Context) ([]models.SessionWithDetail
 	}
 	defer rows.Close()
 
-	var sessions []models.SessionWithDetails
+	var sessions []sessionuc.SessionWithDetails
 
 	for rows.Next() {
-		var s models.SessionWithDetails
+		var s sessionuc.SessionWithDetails
 
 		err := rows.Scan(
 			&s.ID, &s.Status, &s.StartAt, &s.EndAt, &s.CreatedAt,
@@ -63,21 +63,21 @@ func (r *SessionRepository) Get(ctx context.Context) ([]models.SessionWithDetail
 			&s.Movie.ID, &s.Movie.Title,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
+			return nil, fmt.Errorf("%s: scan: %w", op, err)
 		}
 
 		sessions = append(sessions, s)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: iterate rows: %w", op, err)
 	}
 
 	return sessions, nil
 }
 
-func (r *SessionRepository) GetSession(ctx context.Context, id int64) (*models.SessionWithDetails, error) {
-	const op = "repository.GetSession"
+func (r *SessionRepository) Get(ctx context.Context, id int64) (*sessionuc.SessionWithDetails, error) {
+	const op = "postgres.sessions.Get"
 
 	query := `
 	SELECT 
@@ -98,7 +98,7 @@ func (r *SessionRepository) GetSession(ctx context.Context, id int64) (*models.S
 	WHERE s.id = $1
 	`
 
-	var session models.SessionWithDetails
+	var session sessionuc.SessionWithDetails
 
 	err := r.pool.QueryRow(ctx, query, id).Scan(
 		&session.ID,
@@ -113,7 +113,7 @@ func (r *SessionRepository) GetSession(ctx context.Context, id int64) (*models.S
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, repository.ErrNotFound
+			return nil, errs.ErrSessionNotFound
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -121,8 +121,8 @@ func (r *SessionRepository) GetSession(ctx context.Context, id int64) (*models.S
 	return &session, nil
 }
 
-func (r *SessionRepository) CreateSession(ctx context.Context, session domain.Session) (*domain.Session, error) {
-	const op = "repository.CreateSession"
+func (r *SessionRepository) Create(ctx context.Context, session domain.Session) (*domain.Session, error) {
+	const op = "postgres.sessions.Create"
 
 	query := `
 	INSERT INTO sessions (hall_id, movie_id, status, start_at, end_at)
@@ -181,9 +181,9 @@ func (r *SessionRepository) CreateSession(ctx context.Context, session domain.Se
 	return &sessionOutput, nil
 }
 
-func (r *SessionRepository) UpdateSession(ctx context.Context, id int64, updateFn func(session *domain.Session) error) (*domain.Session, error) {
+func (r *SessionRepository) Update(ctx context.Context, id int64, updateFn func(session *domain.Session) error) (*domain.Session, error) {
 	return postgres.RunInTxWithResult(ctx, r.pool, func(tx pgx.Tx) (*domain.Session, error) {
-		const op = "repository.UpdateSession"
+		const op = "postgres.sessions.Update"
 
 		var (
 			sessionID int64
@@ -219,7 +219,7 @@ func (r *SessionRepository) UpdateSession(ctx context.Context, id int64, updateF
 		)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, fmt.Errorf("%s: %w", op, repository.ErrSessionNotFound)
+				return nil, fmt.Errorf("%s: %w", op, errs.ErrSessionNotFound)
 			}
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -265,16 +265,16 @@ func (r *SessionRepository) UpdateSession(ctx context.Context, id int64, updateF
 		}
 
 		if tag.RowsAffected() == 0 {
-			return nil, fmt.Errorf("%s: %w", op, repository.ErrNotFound)
+			return nil, fmt.Errorf("%s: %w", op, errs.ErrSessionNotFound)
 		}
 
 		return &session, nil
 	})
 }
 
-func (r *SessionRepository) DeleteSession(ctx context.Context, id int64, deleteFn func(session *domain.Session) error) error {
+func (r *SessionRepository) Delete(ctx context.Context, id int64, deleteFn func(session *domain.Session) error) error {
 	return postgres.RunInTx(ctx, r.pool, func(tx pgx.Tx) error {
-		const op = "repository.DeleteSession"
+		const op = "postgres.sessions.Delete"
 
 		var (
 			sessionID int64
@@ -310,7 +310,7 @@ func (r *SessionRepository) DeleteSession(ctx context.Context, id int64, deleteF
 		)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return fmt.Errorf("%s: %w", op, repository.ErrSessionNotFound)
+				return fmt.Errorf("%s: %w", op, errs.ErrSessionNotFound)
 			}
 			return fmt.Errorf("%s: %w", op, err)
 		}

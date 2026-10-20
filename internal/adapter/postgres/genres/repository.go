@@ -103,7 +103,7 @@ func (r *GenreRepository) Create(
 	var id int64
 	var typeGenre string
 
-	err := r.pool.QueryRow(ctx, query, genre.Name()).Scan(&id, &typeGenre)
+	err := r.pool.QueryRow(ctx, query, genre.TypeGenre()).Scan(&id, &typeGenre)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -137,7 +137,7 @@ func (r *GenreRepository) Update(
 	var updatedID int64
 	var typeGenre string
 
-	err := r.pool.QueryRow(ctx, query, genre.Name(), id).Scan(&updatedID, &typeGenre)
+	err := r.pool.QueryRow(ctx, query, genre.TypeGenre(), id).Scan(&updatedID, &typeGenre)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%s: %w", op, errs.ErrGenreNotFound)
