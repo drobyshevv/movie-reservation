@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
-	"github.com/drobyshevv/movie-reservation/internal/service"
+	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
 func (h *HallHandler) DeleteSeats(w http.ResponseWriter, r *http.Request) {
@@ -25,10 +25,10 @@ func (h *HallHandler) DeleteSeats(w http.ResponseWriter, r *http.Request) {
 	err = h.usecase.DeleteSeats(r.Context(), id)
 	if err != nil {
 		switch {
-		case errors.Is(err, service.ErrHallNotFound):
+		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
 			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
-		case errors.Is(err, service.ErrSeatNotFound):
+		case errors.Is(err, errs.ErrSeatNotFound):
 			log.Error("seats not found", "err", err)
 			response.WriteError(w, "not_found", "Seats not found", http.StatusNotFound, err.Error())
 		default:

@@ -9,7 +9,6 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/adapter/postgres"
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
-	"github.com/drobyshevv/movie-reservation/internal/repository"
 	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movie"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -485,7 +484,7 @@ func (r *MovieRepository) GetDuration(ctx context.Context, movieID int64) (time.
 	err := r.pool.QueryRow(ctx, query, movieID).Scan(&minutes)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return 0, repository.ErrMovieNotFound
+			return 0, errs.ErrMovieNotFound
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
