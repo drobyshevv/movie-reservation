@@ -6,28 +6,25 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
 	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
-func (h *HallHandler) CreateWithSeats(w http.ResponseWriter, r *http.Request) {
+func (h *HallHandler) PostWithSeats(w http.ResponseWriter, r *http.Request) {
 	const op = "http.halls.CreateWithSeats"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	log := h.log.With(slog.String("op", op))
 
 	var req dto.CreateHallWithSeatsRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error("failed to decode request body", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "invalid_request", "Invalid request body", http.StatusBadRequest, "Failed to decode JSON")
 		return
 	}
 
-	err = h.validator.Struct(req)
-	if err != nil {
+	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -35,11 +32,11 @@ func (h *HallHandler) CreateWithSeats(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, errs.ErrDuplicateSeatsInRequest) {
 			log.Error("invalid request: duplicate seats in payload", "err", err)
-			w.WriteHeader(http.StatusBadRequest)
+			response.WriteError(w, "validation_error", "Duplicate seats in request", http.StatusBadRequest, err.Error())
 			return
 		}
 		log.Error("failed to map seats input", "err", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		response.WriteError(w, "internal_error", "Failed to map seats input", http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -48,26 +45,23 @@ func (h *HallHandler) CreateWithSeats(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrSeatAlreadyExists):
 			log.Error("seats already exist in this hall", "err", err)
-			w.WriteHeader(http.StatusConflict)
-			return
-		case errors.Is(err, errs.ErrHallHasSessions):
+			response.WriteError(w, "conflict", "Seats already exist", http.StatusConflict, err.Error())
+		case errors.Is(err, errs.ErrHallHasActiveSessions):
 			log.Error("cannot modify hall with active sessions", "err", err)
-			w.WriteHeader(http.StatusConflict)
-			return
+			response.WriteError(w, "conflict", "Hall has active sessions", http.StatusConflict, err.Error())
 		default:
 			log.Error("failed to create hall with seats", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			response.WriteError(w, "internal_error", "Failed to create hall with seats", http.StatusInternalServerError, err.Error())
 		}
+		return
 	}
 
 	resp := dto.HallWithSeatsResponse{}
-	resp.FromModel(result)
+	resp.FromModel(*result)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(resp)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }

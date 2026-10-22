@@ -7,49 +7,45 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
 	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
 func (h *GenreHandler) GetGenreMovies(w http.ResponseWriter, r *http.Request) {
-	const op = "http.genre.GetGenreMovies"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	const op = "http.genres.GetGenreMovies"
+	log := h.log.With(slog.String("op", op))
 
 	idStr := r.PathValue("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		log.Error("failed to parse id", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "invalid_request", "Invalid ID format", http.StatusBadRequest, "ID must be a valid integer")
 		return
 	}
 
-	movies, err := h.usecase.GetGenreMovies(r.Context(), id)
+	result, err := h.usecase.GetGenreMovies(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, errs.ErrGenreNotFound) {
+		switch {
+		case errors.Is(err, errs.ErrGenreNotFound):
 			log.Error("genre not found", "err", err)
-			w.WriteHeader(http.StatusNotFound)
-			return
+			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, err.Error())
+		default:
+			log.Error("failed to get genre movies", "err", err)
+			response.WriteError(w, "internal_error", "Failed to get genre movies", http.StatusInternalServerError, err.Error())
 		}
-		log.Error("failed to get genre movies", "err", err)
-		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	resp := []dto.GenreMovieResponse{}
-
-	for _, m := range movies {
-		movieResp := dto.GenreMovieResponse{}
-		movieResp.FromModel(&m)
-		resp = append(resp, movieResp)
+	resp := make([]dto.GenreMovieResponse, len(result))
+	for i, m := range result {
+		resp[i].FromModel(m)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	err = json.NewEncoder(w).Encode(resp)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }

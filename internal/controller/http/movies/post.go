@@ -5,48 +5,42 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
 	"github.com/drobyshevv/movie-reservation/internal/dto"
 )
 
 func (h *MovieHandler) Post(w http.ResponseWriter, r *http.Request) {
-	const op = "http.movie.Post"
+	const op = "http.movies.Post"
+	log := h.log.With(slog.String("op", op))
 
-	log := h.log.With(
-		slog.String("op", op),
-	)
-
-	req := dto.CreateMovieRequest{}
-
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		log.Info("failed to decode request body", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+	var req dto.CreateMovieRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error("failed to decode request body", "err", err)
+		response.WriteError(w, "invalid_request", "Invalid request body", http.StatusBadRequest, "Failed to decode JSON")
 		return
 	}
 
-	err = h.validator.Struct(req)
-	if err != nil {
-		log.Info("invalid request", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+	if err := h.validator.Struct(req); err != nil {
+		log.Error("validation failed", "err", err)
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
 		return
 	}
 
-	input := req.ToModel()
+	input := req.ToInput()
 
-	movie, err := h.usecase.Create(r.Context(), input)
+	result, err := h.usecase.Create(r.Context(), input)
 	if err != nil {
 		log.Error("failed to create movie", "err", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		response.WriteError(w, "internal_error", "Failed to create movie", http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	resp := dto.MovieResponse{}
-	resp.FromModel(movie)
+	resp.FromModel(*result)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(resp)
-	if err != nil {
-		log.Error("failed encode response", "err", err)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Error("failed to encode response", "err", err)
 	}
 }

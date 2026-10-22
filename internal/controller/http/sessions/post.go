@@ -6,63 +6,55 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
+	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
-	"github.com/drobyshevv/movie-reservation/internal/handler/dto"
 )
 
 func (h *SessionHandler) Post(w http.ResponseWriter, r *http.Request) {
 	const op = "http.sessions.Post"
+	log := h.log.With(slog.String("op", op))
 
-	log := h.log.With(
-		slog.String("op", op),
-	)
-
-	req := dto.CreateSessionRequest{}
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		log.Info("failed to decode request body", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+	var req dto.CreateSessionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error("failed to decode request body", "err", err)
+		response.WriteError(w, "invalid_request", "Invalid request body", http.StatusBadRequest, "Failed to decode JSON")
 		return
 	}
 
-	err = h.validator.Struct(req)
-	if err != nil {
-		log.Info("invalid request", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+	if err := h.validator.Struct(req); err != nil {
+		log.Error("validation failed", "err", err)
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
 		return
 	}
 
-	input := req.ToModel()
+	input := req.ToInput()
 
-	session, err := h.usecase.CreateSession(r.Context(), input)
+	result, err := h.usecase.Create(r.Context(), input)
 	if err != nil {
-		if errors.Is(err, errs.ErrHallNotFound) {
-			log.Error("hall not found", "err", err)
-			w.WriteHeader(http.StatusNotFound)
-			return
+		switch {
+		case errors.Is(err, errs.ErrHallNotFound):
+			log.Warn("hall not found", "err", err)
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+		case errors.Is(err, errs.ErrMovieNotFound):
+			log.Warn("movie not found", "err", err)
+			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, err.Error())
+		case errors.Is(err, errs.ErrSessionAlreadyExists):
+			log.Warn("session already exists", "err", err)
+			response.WriteError(w, "conflict", "Session already exists", http.StatusConflict, err.Error())
+		default:
+			log.Error("failed to create session", "err", err)
+			response.WriteError(w, "internal_error", "Failed to create session", http.StatusInternalServerError, err.Error())
 		}
-		if errors.Is(err, errs.ErrMovieNotFound) {
-			log.Error("movie not found", "err", err)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		if errors.Is(err, errs.ErrSessionAlreadyExists) {
-			log.Error("session already exists", "err", err)
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-		log.Error("failed to create session", "err", err)
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	resp := dto.SessionResponse{}
-	resp.FromModel(session)
+	resp.FromModel(result)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(resp)
-	if err != nil {
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }

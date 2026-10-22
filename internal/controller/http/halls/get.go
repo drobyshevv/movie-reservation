@@ -7,21 +7,20 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
 	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
 func (h *HallHandler) Get(w http.ResponseWriter, r *http.Request) {
 	const op = "http.halls.Get"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	log := h.log.With(slog.String("op", op))
 
 	idStr := r.PathValue("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		log.Error("failed to parse id", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "invalid_request", "Invalid ID format", http.StatusBadRequest, "ID must be a valid integer")
 		return
 	}
 
@@ -30,13 +29,12 @@ func (h *HallHandler) Get(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			w.WriteHeader(http.StatusNotFound)
-			return
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
 		default:
 			log.Error("failed to get hall", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			response.WriteError(w, "internal_error", "Failed to get hall", http.StatusInternalServerError, err.Error())
 		}
+		return
 	}
 
 	resp := dto.HallResponse{}
@@ -44,8 +42,7 @@ func (h *HallHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(resp)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }

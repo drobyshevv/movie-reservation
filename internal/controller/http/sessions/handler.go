@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/drobyshevv/movie-reservation/internal/domain"
-	"github.com/drobyshevv/movie-reservation/internal/models"
+	sessionuc "github.com/drobyshevv/movie-reservation/internal/usecase/sessions"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -24,9 +24,9 @@ func NewSessionHandler(log *slog.Logger, usecase SessionUseCase, validator *vali
 }
 
 type SessionUseCase interface {
-	GetSessions(ctx context.Context) ([]models.SessionWithDetails, error)
-	GetSession(ctx context.Context, id int64) (*models.SessionWithDetails, error)
-	CreateSession(ctx context.Context, params models.CreateSessionInput) (*domain.Session, error)
-	UpdateSession(ctx context.Context, id int64, params models.UpdateSessionInput) (*domain.Session, error)
-	DeleteSession(ctx context.Context, id int64) error
+	List(ctx context.Context) ([]sessionuc.SessionWithDetails, error)
+	Get(ctx context.Context, id int64) (*sessionuc.SessionWithDetails, error)
+	Create(ctx context.Context, input sessionuc.CreateSessionInput) (*domain.Session, error)
+	Update(ctx context.Context, id int64, input sessionuc.UpdateSessionInput) (*domain.Session, error)
+	Delete(ctx context.Context, id int64) error
 }

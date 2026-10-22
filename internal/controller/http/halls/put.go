@@ -7,36 +7,33 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/http/response"
 	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
 func (h *HallHandler) Put(w http.ResponseWriter, r *http.Request) {
 	const op = "http.halls.Put"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	log := h.log.With(slog.String("op", op))
 
 	idStr := r.PathValue("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		log.Error("failed to parse id", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "invalid_request", "Invalid ID format", http.StatusBadRequest, "ID must be a valid integer")
 		return
 	}
 
 	var req dto.UpdateHallRequest
-	err = json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error("failed to decode request body", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "invalid_request", "Invalid request body", http.StatusBadRequest, "Failed to decode JSON")
 		return
 	}
 
-	err = h.validator.Struct(req)
-	if err != nil {
+	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -45,13 +42,12 @@ func (h *HallHandler) Put(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			w.WriteHeader(http.StatusNotFound)
-			return
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
 		default:
 			log.Error("failed to update hall", "err", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			response.WriteError(w, "internal_error", "Failed to update hall", http.StatusInternalServerError, err.Error())
 		}
+		return
 	}
 
 	resp := dto.HallResponse{}
@@ -59,8 +55,7 @@ func (h *HallHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(resp)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }
