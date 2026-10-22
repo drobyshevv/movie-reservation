@@ -36,7 +36,7 @@ type MovieWithGenresResponse struct {
 	CreatedAt   time.Time       `json:"created_at"`
 }
 
-func (m *MovieResponse) FromModel(movie *domain.Movie) {
+func (m *MovieResponse) FromModel(movie domain.Movie) {
 	m.ID = movie.ID()
 	m.Title = movie.Title()
 	m.Description = movie.Description()
@@ -44,7 +44,7 @@ func (m *MovieResponse) FromModel(movie *domain.Movie) {
 	m.CreatedAt = movie.CreatedAt()
 }
 
-func (m *CreateMovieRequest) ToModel() movieuc.CreateMovieInput {
+func (m *CreateMovieRequest) ToInput() movieuc.CreateMovieInput {
 	return movieuc.CreateMovieInput{
 		Title:       m.Title,
 		Description: m.Description,
@@ -52,7 +52,7 @@ func (m *CreateMovieRequest) ToModel() movieuc.CreateMovieInput {
 	}
 }
 
-func (m *UpdateMovieRequest) ToModel() movieuc.UpdateMovieInput {
+func (m *UpdateMovieRequest) ToInput() movieuc.UpdateMovieInput {
 	return movieuc.UpdateMovieInput{
 		Title:       m.Title,
 		Description: m.Description,
@@ -66,7 +66,7 @@ func (m *UpdateMovieRequest) ToModel() movieuc.UpdateMovieInput {
 	}
 }
 
-func (m *MovieWithGenresResponse) FromModel(withGenres *movieuc.MovieWithGenres) {
+func (m *MovieWithGenresResponse) FromModel(withGenres movieuc.MovieWithGenres) {
 	m.ID = withGenres.Movie.ID()
 	m.Title = withGenres.Movie.Title()
 	m.Description = withGenres.Movie.Description()
@@ -80,7 +80,7 @@ func (m *MovieWithGenresResponse) FromModel(withGenres *movieuc.MovieWithGenres)
 	}
 }
 
-func FromModelList(movies []domain.Movie) []MovieResponse {
+func FromModelToListMovies(movies []domain.Movie) []MovieResponse {
 	resp := []MovieResponse{}
 	for _, m := range movies {
 		resp = append(resp, MovieResponse{

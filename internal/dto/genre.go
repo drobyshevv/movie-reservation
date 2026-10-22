@@ -36,7 +36,7 @@ func (g *UpdateGenreRequest) ToModel() string {
 	return g.TypeGenre
 }
 
-func (g *GenreMovieResponse) FromModel(gm *genreuc.GenreMovie) {
+func (g *GenreMovieResponse) FromModel(gm genreuc.GenreMovie) {
 	g.ID = gm.ID
 	g.Title = gm.Title
 }
