@@ -9,7 +9,7 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/adapter/postgres"
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
-	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movie"
+	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"

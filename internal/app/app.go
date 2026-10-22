@@ -24,7 +24,7 @@ import (
 
 	ucGenres "github.com/drobyshevv/movie-reservation/internal/usecase/genres"
 	ucHalls "github.com/drobyshevv/movie-reservation/internal/usecase/halls"
-	ucMovies "github.com/drobyshevv/movie-reservation/internal/usecase/movie" // Обрати внимание: папка называется movie, а не movies
+	ucMovies "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
 	ucSessions "github.com/drobyshevv/movie-reservation/internal/usecase/sessions"
 
 	"github.com/go-playground/validator/v10"

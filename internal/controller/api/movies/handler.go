@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/drobyshevv/movie-reservation/internal/domain"
-	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movie"
+	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
 	"github.com/go-playground/validator/v10"
 )
 

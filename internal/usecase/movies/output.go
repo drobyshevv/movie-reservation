@@ -1,4 +1,4 @@
-package movie
+package movies
 
 import "github.com/drobyshevv/movie-reservation/internal/domain"
 

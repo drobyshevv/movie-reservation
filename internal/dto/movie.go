@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/drobyshevv/movie-reservation/internal/domain"
-	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movie"
+	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
 )
 
 type UpdateMovieRequest struct {
