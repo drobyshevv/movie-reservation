@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (u *MovieUseCase) DeleteMovie(ctx context.Context, id int64) error {
+func (u *MovieUseCase) Delete(ctx context.Context, id int64) error {
 	const op = "usecase.movie.Delete"
 
 	err := u.repository.Delete(ctx, id)

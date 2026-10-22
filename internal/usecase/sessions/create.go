@@ -8,7 +8,7 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 )
 
-func (u *UseCase) Create(ctx context.Context, input CreateSessionInput) (*domain.Session, error) {
+func (u *SessionUseCase) Create(ctx context.Context, input CreateSessionInput) (*domain.Session, error) {
 	const op = "usecase.sessions.Create"
 
 	var endAt time.Time

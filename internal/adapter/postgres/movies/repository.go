@@ -130,7 +130,7 @@ func (r *MovieRepository) Get(ctx context.Context, id int64) (*domain.Movie, err
 	return &movie, nil
 }
 
-func (r *MovieRepository) Create(ctx context.Context, input movieuc.CreateMovieInput) (*domain.Movie, error) {
+func (r *MovieRepository) Create(ctx context.Context, movie domain.Movie) (*domain.Movie, error) {
 	const op = "postgres.movies.Create"
 
 	query := `
@@ -150,9 +150,9 @@ func (r *MovieRepository) Create(ctx context.Context, input movieuc.CreateMovieI
 	err := r.pool.QueryRow(
 		ctx,
 		query,
-		input.Title,
-		input.Description,
-		input.Duration,
+		movie.Title(),
+		movie.Description(),
+		movie.Duration(),
 	).Scan(
 		&movieID,
 		&title,
@@ -164,7 +164,7 @@ func (r *MovieRepository) Create(ctx context.Context, input movieuc.CreateMovieI
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	movie, err := domain.RestoreMovie(
+	movieOutput, err := domain.RestoreMovie(
 		movieID,
 		title,
 		description,
@@ -175,7 +175,7 @@ func (r *MovieRepository) Create(ctx context.Context, input movieuc.CreateMovieI
 		return nil, fmt.Errorf("%s: restore: %w", op, err)
 	}
 
-	return &movie, nil
+	return &movieOutput, nil
 }
 
 func (r *MovieRepository) Update(ctx context.Context, id int64, updateFn func(*domain.Movie) error) (*domain.Movie, error) {

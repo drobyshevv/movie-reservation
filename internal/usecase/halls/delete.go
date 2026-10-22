@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (u *HallUseCase) DeleteHall(ctx context.Context, id int64) error {
+func (u *HallUseCase) Delete(ctx context.Context, id int64) error {
 	const op = "usecase.halls.Delete"
 
 	err := u.repository.Delete(ctx, id)

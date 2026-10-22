@@ -7,13 +7,13 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 )
 
-type UseCase struct {
+type SessionUseCase struct {
 	repository SessionRepository
 	movies     MovieReader
 }
 
-func New(repository SessionRepository, movies MovieReader) *UseCase {
-	return &UseCase{
+func NewSessionUseCase(repository SessionRepository, movies MovieReader) *SessionUseCase {
+	return &SessionUseCase{
 		repository: repository,
 		movies:     movies,
 	}

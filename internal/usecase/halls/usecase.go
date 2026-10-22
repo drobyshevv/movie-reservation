@@ -10,7 +10,7 @@ type HallUseCase struct {
 	repository HallRepository
 }
 
-func NewHallService(repository HallRepository) *HallUseCase {
+func NewHallUseCase(repository HallRepository) *HallUseCase {
 	return &HallUseCase{
 		repository: repository,
 	}

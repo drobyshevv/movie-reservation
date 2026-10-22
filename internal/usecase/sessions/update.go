@@ -8,7 +8,7 @@ import (
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
-func (u *UseCase) Update(ctx context.Context, id int64, input UpdateSessionInput) (*domain.Session, error) {
+func (u *SessionUseCase) Update(ctx context.Context, id int64, input UpdateSessionInput) (*domain.Session, error) {
 	const op = "usecase.sessions.Update"
 
 	session, err := u.repository.Update(ctx, id, func(session *domain.Session) error {

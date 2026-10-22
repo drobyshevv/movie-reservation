@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (u *UseCase) List(ctx context.Context) ([]SessionWithDetails, error) {
+func (u *SessionUseCase) List(ctx context.Context) ([]SessionWithDetails, error) {
 	const op = "usecase.sessions.List"
 
 	sessions, err := u.repository.List(ctx)

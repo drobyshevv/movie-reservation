@@ -8,7 +8,7 @@ import (
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
-func (u *UseCase) Delete(ctx context.Context, id int64) error {
+func (u *SessionUseCase) Delete(ctx context.Context, id int64) error {
 	const op = "usecase.sessions.Delete"
 
 	err := u.repository.Delete(ctx, id, func(session *domain.Session) error {
