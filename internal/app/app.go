@@ -62,8 +62,11 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	router := api.NewRouter(log, hallHandler, genreHandler, movieHandler, sessionHandler)
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
-		Handler: router,
+		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
+		Handler:      router,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
 	return &App{
