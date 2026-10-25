@@ -15,11 +15,11 @@ type Movie struct {
 	id          int64
 	title       string
 	description *string
-	duration    time.Duration
+	duration    int32
 	createdAt   time.Time
 }
 
-func NewMovie(title string, description *string, duration time.Duration) (Movie, error) {
+func NewMovie(title string, description *string, duration int32) (Movie, error) {
 	if title == "" {
 		return Movie{}, ErrEmptyMovieTitle
 	}
@@ -39,7 +39,7 @@ func RestoreMovie(
 	id int64,
 	title string,
 	description *string,
-	duration time.Duration,
+	duration int32,
 	createdAt time.Time,
 ) (Movie, error) {
 	if id <= 0 {
@@ -69,7 +69,7 @@ func (m *Movie) ChangeDescription(description *string) {
 	m.description = description
 }
 
-func (m *Movie) ChangeDuration(duration time.Duration) error {
+func (m *Movie) ChangeDuration(duration int32) error {
 	if duration <= 0 {
 		return ErrInvalidMovieDuration
 	}
@@ -78,8 +78,8 @@ func (m *Movie) ChangeDuration(duration time.Duration) error {
 	return nil
 }
 
-func (m Movie) ID() int64               { return m.id }
-func (m Movie) Title() string           { return m.title }
-func (m Movie) Description() *string    { return m.description }
-func (m Movie) Duration() time.Duration { return m.duration }
-func (m Movie) CreatedAt() time.Time    { return m.createdAt }
+func (m Movie) ID() int64            { return m.id }
+func (m Movie) Title() string        { return m.title }
+func (m Movie) Description() *string { return m.description }
+func (m Movie) Duration() int32      { return m.duration }
+func (m Movie) CreatedAt() time.Time { return m.createdAt }

@@ -64,7 +64,7 @@ func (r *MovieRepository) List(ctx context.Context) ([]domain.Movie, error) {
 			movieID,
 			title,
 			description,
-			time.Duration(duration)*time.Minute,
+			duration,
 			createdAt,
 		)
 		if err != nil {
@@ -120,7 +120,7 @@ func (r *MovieRepository) Get(ctx context.Context, id int64) (*domain.Movie, err
 		movieID,
 		title,
 		description,
-		time.Duration(duration)*time.Minute,
+		duration,
 		createdAt,
 	)
 	if err != nil {
@@ -168,7 +168,7 @@ func (r *MovieRepository) Create(ctx context.Context, movie domain.Movie) (*doma
 		movieID,
 		title,
 		description,
-		time.Duration(duration)*time.Minute,
+		duration,
 		createdAt,
 	)
 	if err != nil {
@@ -238,7 +238,7 @@ func (r *MovieRepository) Update(ctx context.Context, id int64, updateFn func(*d
 			movieID,
 			title,
 			description,
-			time.Duration(duration)*time.Minute,
+			duration,
 			createdAt,
 		)
 		if err != nil {
@@ -388,7 +388,7 @@ func (r *MovieRepository) GetWithGenres(
 				id,
 				title,
 				description,
-				time.Duration(duration)*time.Minute,
+				duration,
 				createdAt,
 			)
 			if err != nil {
