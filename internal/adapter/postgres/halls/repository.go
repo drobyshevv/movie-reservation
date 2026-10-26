@@ -307,7 +307,7 @@ func (r *HallRepository) Delete(ctx context.Context, id int64) error {
 		}
 
 		if hasActiveSessions {
-			return fmt.Errorf("%s: %w", op, errs.ErrHallHasActiveSessions)
+			return fmt.Errorf("%s: %w", op, errs.ErrHallHasNonCancelledSessions)
 		}
 
 		var deletedID int64
@@ -344,7 +344,7 @@ func (r *HallRepository) ReplaceSeats(ctx context.Context, id int64, seats []dom
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
 		if hasActiveSessions {
-			return nil, fmt.Errorf("%s: %w", op, errs.ErrHallHasActiveSessions)
+			return nil, fmt.Errorf("%s: %w", op, errs.ErrHallHasNonCancelledSessions)
 		}
 
 		_, err = tx.Exec(ctx, `DELETE FROM seats WHERE hall_id = $1`, id)
@@ -409,7 +409,7 @@ func (r *HallRepository) DeleteSeats(ctx context.Context, id int64) error {
 			return fmt.Errorf("%s: %w", op, err)
 		}
 		if hasActiveSessions {
-			return fmt.Errorf("%s: %w", op, errs.ErrHallHasActiveSessions)
+			return fmt.Errorf("%s: %w", op, errs.ErrHallHasNonCancelledSessions)
 		}
 
 		_, err = tx.Exec(ctx, `DELETE FROM seats WHERE hall_id = $1`, id)

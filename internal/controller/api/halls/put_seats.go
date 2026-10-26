@@ -58,9 +58,9 @@ func (h *HallHandler) PutSeats(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, errs.ErrSeatAlreadyExists):
 			log.Error("conflict: seats already exist in database", "err", err)
 			response.WriteError(w, "conflict", "Seats already exist in database", http.StatusConflict, err.Error())
-		case errors.Is(err, errs.ErrHallHasActiveSessions):
+		case errors.Is(err, errs.ErrHallHasNonCancelledSessions):
 			log.Error("conflict: hall has active sessions", "err", err)
-			response.WriteError(w, "conflict", "Hall has active sessions", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, err.Error())
 		default:
 			log.Error("failed to replace hall seats", "err", err)
 			response.WriteError(w, "internal_error", "Failed to replace hall seats", http.StatusInternalServerError, err.Error())

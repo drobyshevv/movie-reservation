@@ -51,6 +51,9 @@ func (h *MovieHandler) Patch(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, errs.ErrMovieNotFound):
 			log.Warn("movie not found", "err", err)
 			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, err.Error())
+		case errors.Is(err, errs.ErrMovieHasNonCancelledSessions):
+			log.Warn("movie has non-cancelled sessions", "err", err)
+			response.WriteError(w, "conflict", "Movie has non-cancelled sessions", http.StatusConflict, err.Error())
 		default:
 			log.Error("failed to update movie", "err", err)
 			response.WriteError(w, "internal_error", "Failed to update movie", http.StatusInternalServerError, err.Error())
