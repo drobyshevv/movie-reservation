@@ -5,6 +5,16 @@ import (
 	"time"
 )
 
+var (
+	ErrInvalidHallOrMovieID    = errors.New("invalid hall or movie ID")
+	ErrInvalidSessionIDs       = errors.New("invalid session IDs")
+	ErrSessionNotScheduled     = errors.New("only scheduled sessions can be changed")
+	ErrSessionNotCancelled     = errors.New("only cancelled sessions can be scheduled")
+	ErrSessionNotActive        = errors.New("only scheduled sessions can be activated")
+	ErrSessionAlreadyCancelled = errors.New("session is already cancelled")
+	ErrInvalidSessionStatus    = errors.New("invalid session status")
+)
+
 type StatusType string
 
 const (
@@ -27,7 +37,7 @@ func NewSession(
 	period TimeRange,
 ) (Session, error) {
 	if hallID <= 0 || movieID <= 0 {
-		return Session{}, errors.New("invalid hall or movie ID")
+		return Session{}, ErrInvalidHallOrMovieID
 	}
 
 	return Session{
@@ -45,7 +55,7 @@ func RestoreSession(
 	createdAt time.Time,
 ) (Session, error) {
 	if id <= 0 || hallID <= 0 || movieID <= 0 {
-		return Session{}, errors.New("invalid session IDs")
+		return Session{}, ErrInvalidSessionIDs
 	}
 
 	return Session{
@@ -60,7 +70,7 @@ func RestoreSession(
 
 func (s *Session) ChangePeriod(period TimeRange) error {
 	if s.status != StatusScheduled {
-		return errors.New("only scheduled sessions can be changed")
+		return ErrSessionNotScheduled
 	}
 
 	s.period = period
@@ -71,18 +81,18 @@ func (s *Session) ChangeStatus(status StatusType) error {
 	switch status {
 	case StatusScheduled:
 		if s.status != StatusCancelled {
-			return errors.New("only cancelled sessions can be scheduled")
+			return ErrSessionNotCancelled
 		}
 	case StatusActive:
 		if s.status != StatusScheduled {
-			return errors.New("only scheduled sessions can be activated")
+			return ErrSessionNotActive
 		}
 	case StatusCancelled:
 		if s.status == StatusCancelled {
-			return errors.New("session is already cancelled")
+			return ErrSessionAlreadyCancelled
 		}
 	default:
-		return errors.New("invalid session status")
+		return ErrInvalidSessionStatus
 	}
 
 	s.status = status

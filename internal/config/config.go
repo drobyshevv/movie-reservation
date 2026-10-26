@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -16,8 +17,11 @@ type Config struct {
 }
 
 type HttpServer struct {
-	Host string `yaml:"host" env:"SERVER_HOST" env-default:"localhost"`
-	Port int    `yaml:"port" env:"SERVER_PORT" env-default:"8081"`
+	Host         string        `yaml:"host" env:"SERVER_HOST" env-default:"localhost"`
+	Port         int           `yaml:"port" env:"SERVER_PORT" env-default:"8081"`
+	ReadTimeout  time.Duration `yaml:"read-timeout" env:"SERVER_READ_TIMEOUT" env-default:"5s"`
+	WriteTimeout time.Duration `yaml:"write-timeout" env:"SERVER_WRITE_TIMEOUT" env-default:"10s"`
+	IdleTimeout  time.Duration `yaml:"idle-timeout" env:"SERVER_IDLE_TIMEOUT" env-default:"60s"`
 }
 
 type DataBase struct {
@@ -78,10 +82,10 @@ func fetchConfigPath() string {
 }
 
 func validator(cfg Config) error {
-	if cfg.Server.Port < 0 {
+	if cfg.Server.Port < 1 {
 		return errors.New("server port should be positive")
 	}
-	if cfg.DB.Port < 0 {
+	if cfg.DB.Port < 1 {
 		return errors.New("db port should be positive")
 	}
 	if cfg.DB.Password == "" {

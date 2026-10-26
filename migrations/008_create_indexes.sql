@@ -1,5 +1,9 @@
 -- +goose Up
 
+-- genres table indexes
+CREATE UNIQUE INDEX genres_type_lower_unique
+    ON genres (LOWER(type));
+
 -- movie_genre table indexes
 CREATE INDEX idx_movie_genre_genre_id ON movie_genre (genre_id);
 

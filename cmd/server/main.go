@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/drobyshevv/movie-reservation/internal/app"
 	"github.com/drobyshevv/movie-reservation/internal/config"
+	"github.com/drobyshevv/movie-reservation/pkg/logger"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 
 func main() {
 	cfg := config.MustLoadConfig()
-	log := setupLogger(cfg.Env)
+	log := logger.SetupLogger(cfg.Env)
 
 	app, err := app.NewApp(log, *cfg)
 	if err != nil {
@@ -49,21 +48,4 @@ func main() {
 			return
 		}
 	}
-}
-
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	switch env {
-	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		}))
-	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		}))
-	}
-
-	return log
 }
