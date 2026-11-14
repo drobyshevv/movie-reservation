@@ -20,18 +20,18 @@ func (h *BookingHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		log.Warn("failed to decode request body", "err", err)
+		log.Info("failed to decode request body", "err", err)
 		response.WriteError(w, response.CodeInvalidRequest, "Invalid request body", http.StatusBadRequest, "")
 		return
 	}
 
 	if err = h.validator.Struct(req); err != nil {
-		log.Warn("validation failed", "err", err)
+		log.Info("validation failed", "err", err)
 		response.WriteError(w, response.CodeValidationError, "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
-	input, err := req.ToCreateInput()
+	input, err := req.ToInput()
 
 	result, err := h.usecase.Create(r.Context(), input)
 	if err != nil {

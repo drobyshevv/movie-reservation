@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/response"
+	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
@@ -19,8 +20,8 @@ func (h *BookingHandler) Get(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		log.Error("failed to parse id", "err", err)
-		response.WriteError(w, response.CodeInvalidRequest, "Invalid ID format", http.StatusBadRequest, "ID must be a valid integer")
+		log.Info("failed to parse id", "err", err)
+		response.WriteError(w, response.CodeInvalidRequest, "Invalid ID format", http.StatusBadRequest, "")
 		return
 	}
 
@@ -28,7 +29,7 @@ func (h *BookingHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrBookingNotFound):
-			log.Warn("hall not found", "err", err)
+			log.Warn("booking not found", "booking_id", id)
 			response.WriteError(w, response.CodeNotFound, "Hall not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to get booking", "err", err)
@@ -37,9 +38,10 @@ func (h *BookingHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := dto.ToBookingResponse(result)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error("failed to encode response", "err", err)
 	}
 }

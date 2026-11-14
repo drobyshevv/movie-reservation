@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"errors"
 	"time"
 
 	"github.com/drobyshevv/movie-reservation/internal/domain"
@@ -13,6 +14,10 @@ type CreateBookingRequest struct {
 	SessionID int64  `json:"session_id" validate:"required,gt=0"`
 	UserID    string `json:"user_id" validate:"required,uuid"`
 	SeatID    int64  `json:"seat_id" validate:"required,gt=0"`
+}
+
+type UpdateStatusRequest struct {
+	Status string `json:"status" validate:"required"`
 }
 
 type BookingResponse struct {
@@ -38,7 +43,7 @@ type UserBookingResponse struct {
 	Status     string    `json:"status"`
 }
 
-func (b *CreateBookingRequest) ToCreateInput() (*bookinguc.CreateBookingInput, error) {
+func (b *CreateBookingRequest) ToInput() (*bookinguc.CreateBookingInput, error) {
 	userID, err := uuid.Parse(b.UserID)
 	if err != nil {
 		return nil, err
@@ -49,6 +54,14 @@ func (b *CreateBookingRequest) ToCreateInput() (*bookinguc.CreateBookingInput, e
 		UserID:    userID,
 		SeatID:    b.SeatID,
 	}, nil
+}
+
+func (b *UpdateStatusRequest) ToInput() (domain.BookingStatus, error) {
+	status := domain.BookingStatus(b.Status)
+	if !status.IsValid() {
+		return "", errors.New("invalid booking status")
+	}
+	return status, nil
 }
 
 func ToBookingResponse(b *domain.Booking) BookingResponse {
@@ -65,24 +78,28 @@ func ToBookingResponse(b *domain.Booking) BookingResponse {
 	}
 }
 
-func ToSeatStatusesResponse(st []bookinguc.SeatStatusOutput) []SeatStatusResponse {
-	result := make([]SeatStatusResponse, len(st))
-	for i, s := range st {
+func ToSeatStatusesResponse(items []bookinguc.SeatStatusOutput) []SeatStatusResponse {
+	result := make([]SeatStatusResponse, len(items))
+	for i, item := range items {
 		result[i] = SeatStatusResponse{
-			SeatID: s.SeatID,
-			Status: string(s.Status),
+			SeatID: item.SeatID,
+			Status: string(item.Status),
 		}
 	}
 	return result
 }
 
-func ToUserBooking(id int64, movieTitle, hallName, seatNumber string, startAt time.Time, status domain.BookingStatus) UserBookingResponse {
-	return UserBookingResponse{
-		ID:         id,
-		MovieTitle: movieTitle,
-		HallName:   hallName,
-		StartAt:    startAt,
-		SeatNumber: seatNumber,
-		Status:     string(status),
+func ToUserBookings(items []bookinguc.UserBookingOutput) []UserBookingResponse {
+	result := make([]UserBookingResponse, len(items))
+	for i, item := range items {
+		result[i] = UserBookingResponse{
+			ID:         item.ID,
+			MovieTitle: item.MovieTitle,
+			HallName:   item.HallName,
+			StartAt:    item.StartAt,
+			SeatNumber: item.SeatNumber,
+			Status:     string(item.Status),
+		}
 	}
+	return result
 }

@@ -29,6 +29,6 @@ type BookingUseCase interface {
 	Create(ctx context.Context, input *bookinguc.CreateBookingInput) (*domain.Booking, error)
 	ListBySession(ctx context.Context, sessionID int64) ([]bookinguc.SeatStatusOutput, error)
 	ListByUser(ctx context.Context, userID uuid.UUID) ([]bookinguc.UserBookingOutput, error)
-	UpdateStatus(ctx context.Context, id int64, status string) error
-	Delete(ctx context.Context, id int64) error
+	UpdateStatus(ctx context.Context, id int64, status domain.BookingStatus) error
+	//Delete(ctx context.Context, id int64) error
 }
