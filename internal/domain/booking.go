@@ -36,7 +36,7 @@ type Booking struct {
 	createdAt time.Time
 }
 
-func (s BookingStatus) isValid() bool {
+func (s BookingStatus) IsValid() bool {
 	switch s {
 	case BookingPending, BookingConfirmed, BookingCancelled, BookingCompleted:
 		return true
