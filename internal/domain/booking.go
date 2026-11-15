@@ -64,9 +64,10 @@ func NewBooking(sessionID int64, userID uuid.UUID, seatID int64) (*Booking, erro
 }
 
 func RestoreBooking(
-	id, sessionID, seatID int64,
+	id, sessionID int64,
 	userID uuid.UUID,
-	status BookingStatus,
+	seatID int64,
+	status string,
 	createdAt time.Time,
 ) (*Booking, error) {
 	if id <= 0 || sessionID <= 0 || seatID <= 0 {
@@ -76,12 +77,17 @@ func RestoreBooking(
 		return nil, ErrInvalidUserID
 	}
 
+	domainStatus := BookingStatus(status)
+	if !domainStatus.IsValid() {
+		return nil, ErrInvalidBookingStatus
+	}
+
 	return &Booking{
 		id:        id,
 		sessionID: sessionID,
 		userID:    userID,
 		seatID:    seatID,
-		status:    status,
+		status:    domainStatus,
 		createdAt: createdAt,
 	}, nil
 }
