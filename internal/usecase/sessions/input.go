@@ -14,7 +14,7 @@ type CreateSessionInput struct {
 }
 
 type UpdateSessionInput struct {
-	Status  *domain.StatusType
+	Status  *domain.SessionStatus
 	StartAt *time.Time
 	EndAt   *time.Time
 }

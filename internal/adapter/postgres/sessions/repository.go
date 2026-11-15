@@ -134,7 +134,7 @@ func (r *SessionRepository) Create(ctx context.Context, session domain.Session) 
 		id        int64
 		hallID    int64
 		movieID   int64
-		status    domain.StatusType
+		status    domain.SessionStatus
 		startAt   time.Time
 		endAt     time.Time
 		createdAt time.Time
@@ -189,7 +189,7 @@ func (r *SessionRepository) Update(ctx context.Context, id int64, updateFn func(
 			sessionID int64
 			hallID    int64
 			movieID   int64
-			status    domain.StatusType
+			status    domain.SessionStatus
 			startAt   time.Time
 			endAt     time.Time
 			createdAt time.Time
@@ -280,7 +280,7 @@ func (r *SessionRepository) Delete(ctx context.Context, id int64, deleteFn func(
 			sessionID int64
 			hallID    int64
 			movieID   int64
-			status    domain.StatusType
+			status    domain.SessionStatus
 			startAt   time.Time
 			endAt     time.Time
 			createdAt time.Time
