@@ -15,19 +15,19 @@ var (
 	ErrInvalidSessionStatus    = errors.New("invalid session status")
 )
 
-type StatusType string
+type SessionStatus string
 
 const (
-	StatusScheduled StatusType = "scheduled"
-	StatusActive    StatusType = "active"
-	StatusCancelled StatusType = "cancelled"
+	StatusScheduled SessionStatus = "scheduled"
+	StatusActive    SessionStatus = "active"
+	StatusCancelled SessionStatus = "cancelled"
 )
 
 type Session struct {
 	id        int64
 	hallID    int64
 	movieID   int64
-	status    StatusType
+	status    SessionStatus
 	period    TimeRange
 	createdAt time.Time
 }
@@ -50,7 +50,7 @@ func NewSession(
 
 func RestoreSession(
 	id, hallID, movieID int64,
-	status StatusType,
+	status SessionStatus,
 	period TimeRange,
 	createdAt time.Time,
 ) (Session, error) {
@@ -77,7 +77,7 @@ func (s *Session) ChangePeriod(period TimeRange) error {
 	return nil
 }
 
-func (s *Session) ChangeStatus(status StatusType) error {
+func (s *Session) ChangeStatus(status SessionStatus) error {
 	switch status {
 	case StatusScheduled:
 		if s.status != StatusCancelled {
@@ -99,9 +99,9 @@ func (s *Session) ChangeStatus(status StatusType) error {
 	return nil
 }
 
-func (s *Session) ID() int64            { return s.id }
-func (s *Session) HallID() int64        { return s.hallID }
-func (s *Session) MovieID() int64       { return s.movieID }
-func (s *Session) Status() StatusType   { return s.status }
-func (s *Session) Period() TimeRange    { return s.period }
-func (s *Session) CreatedAt() time.Time { return s.createdAt }
+func (s *Session) ID() int64             { return s.id }
+func (s *Session) HallID() int64         { return s.hallID }
+func (s *Session) MovieID() int64        { return s.movieID }
+func (s *Session) Status() SessionStatus { return s.status }
+func (s *Session) Period() TimeRange     { return s.period }
+func (s *Session) CreatedAt() time.Time  { return s.createdAt }
