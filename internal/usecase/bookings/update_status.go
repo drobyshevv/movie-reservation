@@ -10,7 +10,7 @@ import (
 func (u *BookingUseCase) UpdateStatus(ctx context.Context, id int64, status domain.BookingStatus) error {
 	const op = "usecase.bookings.UpdateStatus"
 
-	err := u.repository.UpdateStatus(ctx, func(id int64, booking *domain.Booking, status domain.BookingStatus) error {
+	err := u.repository.UpdateStatus(ctx, id, status, func(booking *domain.Booking, status domain.BookingStatus) error {
 		if !status.IsValid() {
 			return fmt.Errorf("%s: validate status: %w", op, domain.ErrInvalidBookingStatus)
 		}

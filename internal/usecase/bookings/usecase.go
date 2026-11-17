@@ -22,5 +22,5 @@ type BookingRepository interface {
 	Create(ctx context.Context, booking *domain.Booking) (*domain.Booking, error)
 	ListBySession(ctx context.Context, sessionID int64) ([]SeatStatusOutput, error)
 	ListByUser(ctx context.Context, userID uuid.UUID) ([]UserBookingOutput, error)
-	UpdateStatus(ctx context.Context, updateFn func(id int64, booking *domain.Booking, status domain.BookingStatus) error) error
+	UpdateStatus(ctx context.Context, id int64, status domain.BookingStatus, updateFn func(booking *domain.Booking, status domain.BookingStatus) error) error
 }
