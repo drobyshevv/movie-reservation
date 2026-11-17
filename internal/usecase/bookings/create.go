@@ -7,7 +7,7 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 )
 
-func (u *BookingUseCase) Create(ctx context.Context, input CreateBookingInput) (*domain.Booking, error) {
+func (u *BookingUseCase) Create(ctx context.Context, input *CreateBookingInput) (*domain.Booking, error) {
 	const op = "usecase.bookings.Create"
 
 	booking, err := domain.NewBooking(input.SessionID, input.UserID, input.SeatID)

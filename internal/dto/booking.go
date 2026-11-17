@@ -35,12 +35,13 @@ type SeatStatusResponse struct {
 }
 
 type UserBookingResponse struct {
-	ID         int64     `json:"id"`
-	MovieTitle string    `json:"movie_title"`
-	HallName   string    `json:"hall_name"`
-	StartAt    time.Time `json:"start_at"`
-	SeatNumber string    `json:"seat_number"`
-	Status     string    `json:"status"`
+	ID            int64     `json:"id"`
+	MovieTitle    string    `json:"movie_title"`
+	HallName      string    `json:"hall_name"`
+	StartAt       time.Time `json:"start_at"`
+	SeatNumber    string    `json:"seat_number"`
+	BookingStatus string    `json:"booking_status"`
+	SessionStatus string    `json:"session_status"`
 }
 
 func (b *CreateBookingRequest) ToInput() (*bookinguc.CreateBookingInput, error) {
@@ -93,12 +94,13 @@ func ToUserBookings(items []bookinguc.UserBookingOutput) []UserBookingResponse {
 	result := make([]UserBookingResponse, len(items))
 	for i, item := range items {
 		result[i] = UserBookingResponse{
-			ID:         item.ID,
-			MovieTitle: item.MovieTitle,
-			HallName:   item.HallName,
-			StartAt:    item.StartAt,
-			SeatNumber: item.SeatNumber,
-			Status:     string(item.Status),
+			ID:            item.ID,
+			MovieTitle:    item.MovieTitle,
+			HallName:      item.HallName,
+			StartAt:       item.StartAt,
+			SeatNumber:    item.SeatNumber,
+			BookingStatus: string(item.BookingStatus),
+			SessionStatus: string(item.SessionStatus),
 		}
 	}
 	return result

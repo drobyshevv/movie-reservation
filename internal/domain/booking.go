@@ -16,6 +16,7 @@ var (
 	ErrBookingAlreadyCancelled = errors.New("booking is already cancelled")
 	ErrBookingAlreadyCompleted = errors.New("booking is already completed")
 	ErrInvalidBookingStatus    = errors.New("invalid booking status")
+	ErrInvalidStatusTransition = errors.New("invalid transition status")
 )
 
 type BookingStatus string
@@ -110,7 +111,7 @@ func (b *Booking) ChangeStatus(status BookingStatus) error {
 			return ErrBookingAlreadyCompleted
 		}
 	case BookingPending:
-		return ErrInvalidBookingStatus
+		return ErrInvalidStatusTransition
 	default:
 		return ErrInvalidBookingStatus
 	}

@@ -42,9 +42,11 @@ func (h *BookingHandler) Post(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, errs.ErrInvalidBookingConditions):
 			log.Warn("invalid booking conditions", "err", err)
 			response.WriteError(w, response.CodeConflict, "Invalid booking conditions", http.StatusConflict, "")
+		default:
+			log.Error("failed to create booking", "err", err)
+			response.WriteError(w, response.CodeInternalError, "Internal server error", http.StatusInternalServerError, "")
 		}
-		log.Error("failed to create booking", "err", err)
-		response.WriteError(w, response.CodeInternalError, "Internal server error", http.StatusInternalServerError, "")
+		return
 	}
 
 	resp := dto.ToBookingResponse(result)
