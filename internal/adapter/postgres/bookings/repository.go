@@ -79,10 +79,10 @@ func (r *BookingRepository) Create(ctx context.Context, booking *domain.Booking)
 	WITH
 	verification AS (
 		SELECT
-			$1 AS session_id,
-			$2 AS user_id,
-			$3 AS seat_id,
-			$4 AS status,
+			$1::bigint AS session_id,
+			$2::uuid AS user_id,
+			$3::bigint AS seat_id,
+			$4::varchar AS status,
 			sn.status AS session_status,
 			sn.hall_id AS session_hall_id,
 			st.hall_id AS seat_hall_id
@@ -253,7 +253,7 @@ func (r *BookingRepository) UpdateStatus(ctx context.Context, id int64, status d
 		FROM bookings
 		WHERE id = $1
 		FOR UPDATE; 	
-		`).Scan(
+		`, id).Scan(
 			&bookingRaw.id,
 			&bookingRaw.sessionID,
 			&bookingRaw.userID,
