@@ -2,14 +2,12 @@ package bookings
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/response"
 	"github.com/drobyshevv/movie-reservation/internal/dto"
-	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
 func (h *BookingHandler) ListBySession(w http.ResponseWriter, r *http.Request) {
@@ -27,15 +25,8 @@ func (h *BookingHandler) ListBySession(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.usecase.ListBySession(r.Context(), sessionId)
 	if err != nil {
-		switch {
-		case errors.Is(err, errs.ErrSessionNotFound):
-			log.Warn("session not found", "session_id", sessionId)
-			response.WriteError(w, response.CodeNotFound, "Session not found", http.StatusNotFound, "")
-
-		default:
-			log.Error("failed to get list bookings by session", "err", err)
-			response.WriteError(w, response.CodeInternalError, "Internal server error", http.StatusInternalServerError, "")
-		}
+		log.Error("failed to get list bookings by session", "err", err)
+		response.WriteError(w, response.CodeInternalError, "Internal server error", http.StatusInternalServerError, "")
 		return
 	}
 
