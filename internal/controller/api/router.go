@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/api/bookings"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/genres"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/halls"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/movies"
@@ -19,6 +20,7 @@ func NewRouter(
 	genreHandler *genres.GenreHandler,
 	movieHandler *movies.MovieHandler,
 	sessionHandler *sessions.SessionHandler,
+	bookingHandler *bookings.BookingHandler,
 ) http.Handler {
 	router := chi.NewRouter()
 
@@ -79,6 +81,14 @@ func NewRouter(
 			r.Patch("/", sessionHandler.Patch)
 			r.Delete("/", sessionHandler.Delete)
 		})
+	})
+
+	router.Route("/bookings", func(r chi.Router) {
+		r.Get("/{id}", bookingHandler.Get)
+		r.Get("/users/{user_id}", bookingHandler.ListByUser)
+		r.Get("/sessions/{session_id}", bookingHandler.ListBySession)
+		r.Post("/", bookingHandler.Post)
+		r.Patch("/{id}", bookingHandler.Patch)
 	})
 
 	return router

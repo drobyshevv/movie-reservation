@@ -9,6 +9,7 @@ import (
 
 	"github.com/drobyshevv/movie-reservation/internal/adapter/postgres"
 
+	repoBookings "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/bookings"
 	repoGenres "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/genres"
 	repoHalls "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/halls"
 	repoMovies "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/movies"
@@ -17,11 +18,13 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/config"
 
 	"github.com/drobyshevv/movie-reservation/internal/controller/api"
+	handlerBookings "github.com/drobyshevv/movie-reservation/internal/controller/api/bookings"
 	handlerGenres "github.com/drobyshevv/movie-reservation/internal/controller/api/genres"
 	handlerHalls "github.com/drobyshevv/movie-reservation/internal/controller/api/halls"
 	handlerMovies "github.com/drobyshevv/movie-reservation/internal/controller/api/movies"
 	handlerSessions "github.com/drobyshevv/movie-reservation/internal/controller/api/sessions"
 
+	ucBookings "github.com/drobyshevv/movie-reservation/internal/usecase/bookings"
 	ucGenres "github.com/drobyshevv/movie-reservation/internal/usecase/genres"
 	ucHalls "github.com/drobyshevv/movie-reservation/internal/usecase/halls"
 	ucMovies "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
@@ -46,11 +49,13 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	genreRepository := repoGenres.NewGenreRepository(pool)
 	movieRepository := repoMovies.NewMovieRepository(pool)
 	sessionRepository := repoSessions.NewSessionRepository(pool)
+	bookingRepository := repoBookings.NewBookingRepository(pool)
 
 	hallUseCase := ucHalls.NewHallUseCase(hallRepository)
 	genreUseCase := ucGenres.NewGenreUseCase(genreRepository)
 	movieUseCase := ucMovies.NewMovieUseCase(movieRepository)
 	sessionUseCase := ucSessions.NewSessionUseCase(sessionRepository, movieRepository)
+	bookingUseCase := ucBookings.NewBookingUseCase(bookingRepository)
 
 	validator := validator.New()
 
@@ -58,8 +63,9 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	genreHandler := handlerGenres.NewGenreHandler(log, genreUseCase, validator)
 	movieHandler := handlerMovies.NewMovieHandler(log, movieUseCase, validator)
 	sessionHandler := handlerSessions.NewSessionHandler(log, sessionUseCase, validator)
+	bookingHandler := handlerBookings.NewBookingHandler(log, bookingUseCase, validator)
 
-	router := api.NewRouter(log, hallHandler, genreHandler, movieHandler, sessionHandler)
+	router := api.NewRouter(log, hallHandler, genreHandler, movieHandler, sessionHandler, bookingHandler)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
