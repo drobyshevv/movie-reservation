@@ -1,0 +1,17 @@
+package bookings
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/drobyshevv/movie-reservation/internal/domain"
+)
+
+func (u *BookingUseCase) Get(ctx context.Context, id int64) (*domain.Booking, error) {
+	const op = "usecase.bookings.Get"
+	booking, err := u.repository.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return booking, nil
+}

@@ -8,7 +8,7 @@ import (
 
 type SessionWithDetails struct {
 	ID        int64
-	Status    domain.StatusType
+	Status    domain.SessionStatus
 	StartAt   time.Time
 	EndAt     time.Time
 	CreatedAt time.Time
