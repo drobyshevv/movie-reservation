@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/api/dto"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/response"
-	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 

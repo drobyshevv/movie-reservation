@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/api/dto"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/response"
-	"github.com/drobyshevv/movie-reservation/internal/dto"
 )
 
 func (h *GenreHandler) List(w http.ResponseWriter, r *http.Request) {

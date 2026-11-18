@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/api/dto"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/response"
 	"github.com/drobyshevv/movie-reservation/internal/domain"
-	"github.com/drobyshevv/movie-reservation/internal/dto"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 

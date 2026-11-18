@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/drobyshevv/movie-reservation/internal/controller/api/dto"
 	"github.com/drobyshevv/movie-reservation/internal/controller/api/response"
-	"github.com/drobyshevv/movie-reservation/internal/dto"
 )
 
 func (h *BookingHandler) ListBySession(w http.ResponseWriter, r *http.Request) {
