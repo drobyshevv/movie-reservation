@@ -10,6 +10,7 @@ import (
 	"github.com/drobyshevv/movie-reservation/internal/domain"
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -490,4 +491,64 @@ func (r *MovieRepository) GetDuration(ctx context.Context, movieID int64) (time.
 	}
 
 	return time.Duration(minutes) * time.Minute, nil
+}
+
+func (r *MovieRepository) GetPosterID(ctx context.Context, id int64) (uuid.UUID, error) {
+	const op = "postgres.movies.GetPosterID"
+
+	query := `
+	SELECT poster_id FROM movies
+	WHERE id = $1;	
+	`
+
+	var posterID *uuid.UUID
+	err := r.pool.QueryRow(ctx, query, id).Scan(&posterID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.Nil, fmt.Errorf("%s: %w", op, errs.ErrMovieNotFound)
+		}
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if posterID == nil {
+		return uuid.Nil, nil
+	}
+	return *posterID, nil
+}
+
+func (r *MovieRepository) PutPosterID(ctx context.Context, id int64, posterID uuid.UUID) error {
+	const op = "postgres.movies.PutPosterID"
+
+	query := `
+		UPDATE movies
+		SET poster_id = $1
+		WHERE id = $2;
+	`
+
+	tag, err := r.pool.Exec(ctx, query, posterID, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("%s: %w", op, errs.ErrMovieNotFound)
+	}
+
+	return nil
+}
+
+func (r *MovieRepository) ClearPosterID(ctx context.Context, id int64, posterID uuid.UUID) error {
+	const op = "postgres.movies.ClearPosterID"
+
+	query := `
+		UPDATE movies
+		SET poster_id = NULL
+		WHERE id = $2 AND poster_id = $2;	
+	`
+
+	_, err := r.pool.Exec(ctx, query, id, posterID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
