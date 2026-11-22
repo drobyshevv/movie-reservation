@@ -542,7 +542,7 @@ func (r *MovieRepository) ClearPosterID(ctx context.Context, id int64, posterID 
 	query := `
 		UPDATE movies
 		SET poster_id = NULL
-		WHERE id = $2 AND poster_id = $2;	
+		WHERE id = $1 AND poster_id = $2;	
 	`
 
 	_, err := r.pool.Exec(ctx, query, id, posterID)
