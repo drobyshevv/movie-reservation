@@ -10,3 +10,10 @@ db:
   port: 5432
   db_name: "movie-reservation"
   sslmode: "disable"
+
+s3:
+  endpoint: "http://s3:9000"
+  bucket: "posters"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  region: "us-east-1"

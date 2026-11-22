@@ -8,12 +8,14 @@ import (
 	"net/http"
 
 	"github.com/drobyshevv/movie-reservation/internal/adapter/postgres"
+	"github.com/drobyshevv/movie-reservation/internal/adapter/s3"
 
 	repoBookings "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/bookings"
 	repoGenres "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/genres"
 	repoHalls "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/halls"
 	repoMovies "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/movies"
 	repoSessions "github.com/drobyshevv/movie-reservation/internal/adapter/postgres/sessions"
+	storageMovie "github.com/drobyshevv/movie-reservation/internal/adapter/s3/movies"
 
 	"github.com/drobyshevv/movie-reservation/internal/config"
 
@@ -45,15 +47,21 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 		return nil, err
 	}
 
+	storage, err := s3.New(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	hallRepository := repoHalls.NewHallRepository(pool)
 	genreRepository := repoGenres.NewGenreRepository(pool)
 	movieRepository := repoMovies.NewMovieRepository(pool)
 	sessionRepository := repoSessions.NewSessionRepository(pool)
 	bookingRepository := repoBookings.NewBookingRepository(pool)
+	movieStorage := storageMovie.NewS3MovieStorage(storage, cfg.S3.Bucket)
 
 	hallUseCase := ucHalls.NewHallUseCase(hallRepository)
 	genreUseCase := ucGenres.NewGenreUseCase(genreRepository)
-	movieUseCase := ucMovies.NewMovieUseCase(movieRepository)
+	movieUseCase := ucMovies.NewMovieUseCase(movieRepository, movieStorage)
 	sessionUseCase := ucSessions.NewSessionUseCase(sessionRepository, movieRepository)
 	bookingUseCase := ucBookings.NewBookingUseCase(bookingRepository)
 
