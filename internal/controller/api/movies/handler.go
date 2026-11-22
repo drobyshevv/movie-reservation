@@ -2,6 +2,7 @@ package movies
 
 import (
 	"context"
+	"io"
 	"log/slog"
 
 	"github.com/drobyshevv/movie-reservation/internal/domain"
@@ -26,10 +27,15 @@ func NewMovieHandler(log *slog.Logger, usecase MovieUseCase, validator *validato
 type MovieUseCase interface {
 	List(ctx context.Context) ([]domain.Movie, error)
 	Get(ctx context.Context, id int64) (*domain.Movie, error)
-	GetWithGenres(ctx context.Context, id int64) (*movieuc.MovieWithGenres, error)
 	Create(ctx context.Context, input movieuc.CreateMovieInput) (*domain.Movie, error)
 	Update(ctx context.Context, id int64, input movieuc.UpdateMovieInput) (*domain.Movie, error)
 	Delete(ctx context.Context, id int64) error
+
+	GetWithGenres(ctx context.Context, id int64) (*movieuc.MovieWithGenres, error)
 	CreateMovieGenre(ctx context.Context, movieID int64, genreID int64) error
 	DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error
+
+	GetPoster(ctx context.Context, id int64) (*movieuc.File, error)
+	PutPoster(ctx context.Context, id int64, file io.ReadSeeker, size int64) error
+	DeletePoster(ctx context.Context, id int64) error
 }

@@ -69,6 +69,10 @@ func NewRouter(
 			r.Get("/genres", movieHandler.GetMovieGenre)
 			r.Post("/genres/{genre_id}", movieHandler.PostMovieGenre)
 			r.Delete("/genres/{genre_id}", movieHandler.DeleteMovieGenre)
+
+			r.Get("/posters", movieHandler.GetPoster)
+			r.Put("/posters", movieHandler.PutPoster)
+			r.Delete("/posters", movieHandler.DeletePoster)
 		})
 	})
 

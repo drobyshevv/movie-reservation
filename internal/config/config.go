@@ -14,6 +14,7 @@ type Config struct {
 	Env    string     `yaml:"env" env:"ENV"`
 	Server HttpServer `yaml:"http-server"`
 	DB     DataBase   `yaml:"db"`
+	S3     S3         `yaml:"s3"`
 }
 
 type HttpServer struct {
@@ -31,6 +32,14 @@ type DataBase struct {
 	Port     int    `yaml:"port" env:"DB_PORT" env-default:"5432"`
 	Name     string `yaml:"db_name" env:"DB_NAME" env-default:"movie-reservation"`
 	SslMode  string `yaml:"sslmode" env:"DB_SSLMODE" env-default:"disable"`
+}
+
+type S3 struct {
+	Endpoint  string `yaml:"endpoint" env:"S3_ENDPOINT"`
+	Bucket    string `yaml:"bucket" env:"S3_BUCKET"`
+	AccessKey string `yaml:"access-key" env:"S3_ACCESS_KEY"`
+	SecretKey string `yaml:"secret-key" env:"S3_SECRET_KEY"`
+	Region    string `yaml:"region" env:"S3_REGION" env-default:"us-east-1"`
 }
 
 func BuildDSN(db DataBase) string {
@@ -90,6 +99,15 @@ func validator(cfg Config) error {
 	}
 	if cfg.DB.Password == "" {
 		return errors.New("db password must not be empty")
+	}
+	if cfg.S3.Endpoint == "" {
+		return errors.New("S3 endpoint must not be empty")
+	}
+	if cfg.S3.Bucket == "" {
+		return errors.New("S3 bucket must not be empty")
+	}
+	if cfg.S3.AccessKey == "" || cfg.S3.SecretKey == "" {
+		return errors.New("S3 credentials must not be empty")
 	}
 	return nil
 }

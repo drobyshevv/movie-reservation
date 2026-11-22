@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// TODO реализовать удаление постера из s3
 func (u *MovieUseCase) Delete(ctx context.Context, id int64) error {
 	const op = "usecase.movie.Delete"
 

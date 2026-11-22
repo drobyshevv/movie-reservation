@@ -4,7 +4,7 @@ CREATE TABLE movies (
     title VARCHAR(100) NOT NULL,
     description TEXT,
     duration INTEGER NOT NULL,
-    image BYTEA,
+    poster_id UUID,
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 

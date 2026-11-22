@@ -9,9 +9,15 @@ services:
       - "8082:8082"
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
     depends_on:
       migrator:
         condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
 
   db:
     image: postgres:18
@@ -27,6 +33,23 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+  
+  s3:
+    image: rustfs/rustfs:1.0.6
+    command: ["/data"]
+    ports:
+      - "9000:9000"
+      - "9001:9001" 
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   migrator:
     build:
@@ -42,3 +65,4 @@ services:
 
 volumes:
   postgres_data:
+  rustfs_data:
