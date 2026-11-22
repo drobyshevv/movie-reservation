@@ -2,40 +2,44 @@ package movies
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
+	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
 	"github.com/google/uuid"
 )
 
 const posterPrefix = "movies/posters/"
 
-type MediaStorage struct {
+type S3MovieStorage struct {
 	client *s3.Client
-	backet string
+	bucket string
 }
 
-func NewPosterStoragey(client *s3.Client, backet string) *MediaStorage {
-	return &MediaStorage{
+func NewS3MovieStorage(client *s3.Client, bucket string) *S3MovieStorage {
+	return &S3MovieStorage{
 		client: client,
-		backet: backet,
+		bucket: bucket,
 	}
 }
 
-func (r *MediaStorage) PutPoster(ctx context.Context, file io.ReadSeeker, size int64) (uuid.UUID, error) {
+func (s *S3MovieStorage) PutPoster(ctx context.Context, file io.ReadSeeker, size int64, contentType string) (uuid.UUID, error) {
 	const op = "s3.movies.PutPoster"
 
 	key := uuid.New()
-	keyStr := fmt.Sprintf("%s%s.jpg", posterPrefix, key.String())
+	keyStr := fmt.Sprintf("%s%s", posterPrefix, key.String())
 
-	_, err := r.client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:        &r.backet,
+	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:        &s.bucket,
 		Key:           &keyStr,
 		Body:          file,
 		ContentLength: &size,
+		ContentType:   aws.String(contentType),
 	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
@@ -44,16 +48,22 @@ func (r *MediaStorage) PutPoster(ctx context.Context, file io.ReadSeeker, size i
 	return key, nil
 }
 
-func (r *MediaStorage) GetPoster(ctx context.Context, key uuid.UUID) (*movieuc.File, error) {
+func (s *S3MovieStorage) GetPoster(ctx context.Context, key uuid.UUID) (*movieuc.File, error) {
 	const op = "s3.movies.GetPoster"
 
-	keyStr := fmt.Sprintf("%s%s.jpg", posterPrefix, key.String())
+	keyStr := fmt.Sprintf("%s%s", posterPrefix, key.String())
 
-	output, err := r.client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: &r.backet,
+	output, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: &s.bucket,
 		Key:    &keyStr,
 	})
 	if err != nil {
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			if apiErr.ErrorCode() == "NoSuchKey" {
+				return nil, fmt.Errorf("%s: %w", op, errs.ErrPosterNotFound)
+			}
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -64,13 +74,13 @@ func (r *MediaStorage) GetPoster(ctx context.Context, key uuid.UUID) (*movieuc.F
 	}, nil
 }
 
-func (r *MediaStorage) DeletePoster(ctx context.Context, key uuid.UUID) error {
+func (s *S3MovieStorage) DeletePoster(ctx context.Context, key uuid.UUID) error {
 	const op = "s3.movies.DeletePoster"
 
-	keyStr := fmt.Sprintf("%s%s.jpg", posterPrefix, key.String())
+	keyStr := fmt.Sprintf("%s%s", posterPrefix, key.String())
 
-	_, err := r.client.DeleteObject(ctx, &s3.DeleteObjectInput{
-		Bucket: &r.backet,
+	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: &s.bucket,
 		Key:    &keyStr,
 	})
 	if err != nil {
