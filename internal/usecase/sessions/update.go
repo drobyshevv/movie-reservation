@@ -23,24 +23,26 @@ func (u *SessionUseCase) Update(ctx context.Context, id int64, input UpdateSessi
 			}
 		}
 
-		startAt := session.Period().Start()
-		endAt := session.Period().End()
+		if input.StartAt != nil || input.EndAt != nil {
+			startAt := session.Period().Start()
+			endAt := session.Period().End()
 
-		if input.StartAt != nil {
-			startAt = *input.StartAt
-		}
-		if input.EndAt != nil {
-			endAt = *input.EndAt
-		}
+			if input.StartAt != nil {
+				startAt = *input.StartAt
+			}
+			if input.EndAt != nil {
+				endAt = *input.EndAt
+			}
 
-		period, err := domain.NewTimeRange(startAt, endAt)
-		if err != nil {
-			return fmt.Errorf("%s: %w", op, err)
-		}
+			period, err := domain.NewTimeRange(startAt, endAt)
+			if err != nil {
+				return fmt.Errorf("%s: %w", op, err)
+			}
 
-		err = session.ChangePeriod(period)
-		if err != nil {
-			return fmt.Errorf("%s: %w", op, err)
+			err = session.ChangePeriod(period)
+			if err != nil {
+				return fmt.Errorf("%s: %w", op, err)
+			}
 		}
 		return nil
 	})
