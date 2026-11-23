@@ -33,7 +33,7 @@ func (h *GenreHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -42,13 +42,13 @@ func (h *GenreHandler) Put(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrGenreNotFound):
 			log.Error("genre not found", "err", err)
-			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrGenreAlreadyExists):
 			log.Error("genre conflict", "err", err)
-			response.WriteError(w, "conflict", "Genre already exists", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Genre already exists", http.StatusConflict, "")
 		default:
 			log.Error("failed to update genre", "err", err)
-			response.WriteError(w, "internal_error", "Failed to update genre", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to update genre", http.StatusInternalServerError, "")
 		}
 		return
 	}

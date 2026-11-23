@@ -29,10 +29,10 @@ func (h *HallHandler) Get(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to get hall", "err", err)
-			response.WriteError(w, "internal_error", "Failed to get hall", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to get hall", http.StatusInternalServerError, "")
 		}
 		return
 	}

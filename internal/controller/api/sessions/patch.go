@@ -33,7 +33,7 @@ func (h *SessionHandler) Patch(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -50,16 +50,16 @@ func (h *SessionHandler) Patch(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrSessionNotFound):
 			log.Warn("session not found", "err", err)
-			response.WriteError(w, "not_found", "Session not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Session not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrSessionNotCancelled):
 			log.Warn("session must be cancelled first", "err", err)
-			response.WriteError(w, "conflict", "Session must be cancelled before modification", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Session must be cancelled before modification", http.StatusConflict, "")
 		case errors.Is(err, errs.ErrConflictingSessionUpdates):
 			log.Warn("conflicting session updates", "err", err)
-			response.WriteError(w, "conflict", "Conflicting session updates", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Conflicting session updates", http.StatusConflict, "")
 		default:
 			log.Error("failed to update session", "err", err)
-			response.WriteError(w, "internal_error", "Failed to update session", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to update session", http.StatusInternalServerError, "")
 		}
 		return
 	}

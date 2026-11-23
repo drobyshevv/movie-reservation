@@ -29,10 +29,10 @@ func (h *HallHandler) GetWithSeats(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to get hall with seats", "err", err)
-			response.WriteError(w, "internal_error", "Failed to get hall with seats", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to get hall with seats", http.StatusInternalServerError, "")
 		}
 		return
 	}

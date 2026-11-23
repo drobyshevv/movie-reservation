@@ -29,10 +29,10 @@ func (h *MovieHandler) Get(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):
 			log.Warn("movie not found", "err", err)
-			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to get movie", "err", err)
-			response.WriteError(w, "internal_error", "Failed to get movie", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to get movie", http.StatusInternalServerError, "")
 		}
 		return
 	}

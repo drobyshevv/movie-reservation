@@ -33,7 +33,7 @@ func (h *HallHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -42,10 +42,10 @@ func (h *HallHandler) Put(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to update hall", "err", err)
-			response.WriteError(w, "internal_error", "Failed to update hall", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to update hall", http.StatusInternalServerError, "")
 		}
 		return
 	}

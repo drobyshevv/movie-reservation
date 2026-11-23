@@ -29,10 +29,10 @@ func (h *GenreHandler) Get(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrGenreNotFound):
 			log.Error("genre not found", "err", err)
-			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to get genre", "err", err)
-			response.WriteError(w, "internal_error", "Failed to get genre", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to get genre", http.StatusInternalServerError, "")
 		}
 		return
 	}

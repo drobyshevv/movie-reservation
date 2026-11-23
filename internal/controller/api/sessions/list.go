@@ -16,7 +16,7 @@ func (h *SessionHandler) List(w http.ResponseWriter, r *http.Request) {
 	result, err := h.usecase.List(r.Context())
 	if err != nil {
 		log.Error("failed to get sessions", "err", err)
-		response.WriteError(w, "internal_error", "Failed to get sessions", http.StatusInternalServerError, err.Error())
+		response.WriteError(w, "internal_error", "Failed to get sessions", http.StatusInternalServerError, "")
 		return
 	}
 

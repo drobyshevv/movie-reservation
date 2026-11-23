@@ -16,7 +16,7 @@ func (h *MovieHandler) List(w http.ResponseWriter, r *http.Request) {
 	result, err := h.usecase.List(r.Context())
 	if err != nil {
 		log.Error("failed to get movies", "err", err)
-		response.WriteError(w, "internal_error", "Failed to get movies", http.StatusInternalServerError, err.Error())
+		response.WriteError(w, "internal_error", "Failed to get movies", http.StatusInternalServerError, "")
 		return
 	}
 

@@ -24,7 +24,7 @@ func (h *SessionHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -35,16 +35,16 @@ func (h *SessionHandler) Post(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Warn("hall not found", "err", err)
-			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrMovieNotFound):
 			log.Warn("movie not found", "err", err)
-			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrSessionAlreadyExists):
 			log.Warn("session already exists", "err", err)
-			response.WriteError(w, "conflict", "Session already exists", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Session already exists", http.StatusConflict, "")
 		default:
 			log.Error("failed to create session", "err", err)
-			response.WriteError(w, "internal_error", "Failed to create session", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to create session", http.StatusInternalServerError, "")
 		}
 		return
 	}

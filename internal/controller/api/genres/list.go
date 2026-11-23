@@ -16,7 +16,7 @@ func (h *GenreHandler) List(w http.ResponseWriter, r *http.Request) {
 	result, err := h.usecase.List(r.Context())
 	if err != nil {
 		log.Error("failed to get genres", "err", err)
-		response.WriteError(w, "internal_error", "Failed to get genres", http.StatusInternalServerError, err.Error())
+		response.WriteError(w, "internal_error", "Failed to get genres", http.StatusInternalServerError, "")
 		return
 	}
 

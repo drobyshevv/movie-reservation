@@ -35,16 +35,16 @@ func (h *MovieHandler) PostMovieGenre(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):
 			log.Warn("movie not found", "err", err)
-			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrGenreNotFound):
 			log.Warn("genre not found", "err", err)
-			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Genre not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrMovieGenreAlreadyExists):
 			log.Warn("movie genre already exists", "err", err)
-			response.WriteError(w, "conflict", "Movie genre already exists", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Movie genre already exists", http.StatusConflict, "")
 		default:
 			log.Error("failed to add movie genre", "err", err)
-			response.WriteError(w, "internal_error", "Failed to add movie genre", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to add movie genre", http.StatusInternalServerError, "")
 		}
 		return
 	}

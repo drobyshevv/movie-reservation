@@ -27,13 +27,13 @@ func (h *MovieHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):
 			log.Warn("movie not found", "err", err)
-			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrMovieHasNonCancelledSessions):
 			log.Warn("movie has non-cancelled sessions", "err", err)
-			response.WriteError(w, "conflict", "Movie has non-cancelled sessions", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Movie has non-cancelled sessions", http.StatusConflict, "")
 		default:
 			log.Error("failed to delete movie", "err", err)
-			response.WriteError(w, "internal_error", "Failed to delete movie", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to delete movie", http.StatusInternalServerError, "")
 		}
 		return
 	}

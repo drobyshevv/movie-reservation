@@ -24,7 +24,7 @@ func (h *HallHandler) PostWithSeats(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -32,11 +32,11 @@ func (h *HallHandler) PostWithSeats(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, errs.ErrDuplicateSeatsInRequest) {
 			log.Error("invalid request: duplicate seats in payload", "err", err)
-			response.WriteError(w, "validation_error", "Duplicate seats in request", http.StatusBadRequest, err.Error())
+			response.WriteError(w, "validation_error", "Duplicate seats in request", http.StatusBadRequest, "")
 			return
 		}
 		log.Error("failed to map seats input", "err", err)
-		response.WriteError(w, "internal_error", "Failed to map seats input", http.StatusInternalServerError, err.Error())
+		response.WriteError(w, "internal_error", "Failed to map seats input", http.StatusInternalServerError, "")
 		return
 	}
 
@@ -45,13 +45,13 @@ func (h *HallHandler) PostWithSeats(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrSeatAlreadyExists):
 			log.Error("seats already exist in this hall", "err", err)
-			response.WriteError(w, "conflict", "Seats already exist", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Seats already exist", http.StatusConflict, "")
 		case errors.Is(err, errs.ErrHallHasNonCancelledSessions):
 			log.Error("cannot modify hall with active sessions", "err", err)
-			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, "")
 		default:
 			log.Error("failed to create hall with seats", "err", err)
-			response.WriteError(w, "internal_error", "Failed to create hall with seats", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to create hall with seats", http.StatusInternalServerError, "")
 		}
 		return
 	}

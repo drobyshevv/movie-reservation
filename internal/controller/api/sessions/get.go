@@ -29,10 +29,10 @@ func (h *SessionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrSessionNotFound):
 			log.Warn("session not found", "err", err)
-			response.WriteError(w, "not_found", "Session not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Session not found", http.StatusNotFound, "")
 		default:
 			log.Error("failed to get session", "err", err)
-			response.WriteError(w, "internal_error", "Failed to get session", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to get session", http.StatusInternalServerError, "")
 		}
 		return
 	}

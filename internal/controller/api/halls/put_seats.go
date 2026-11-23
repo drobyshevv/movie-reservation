@@ -33,7 +33,7 @@ func (h *HallHandler) PutSeats(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Var(req, "required,dive"); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -41,11 +41,11 @@ func (h *HallHandler) PutSeats(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, errs.ErrDuplicateSeatsInRequest) {
 			log.Error("invalid request: duplicate seats in payload", "err", err)
-			response.WriteError(w, "validation_error", "Duplicate seats in request", http.StatusBadRequest, err.Error())
+			response.WriteError(w, "validation_error", "Duplicate seats in request", http.StatusBadRequest, "")
 			return
 		}
 		log.Error("failed to map seats input", "err", err)
-		response.WriteError(w, "internal_error", "Failed to map seats input", http.StatusInternalServerError, err.Error())
+		response.WriteError(w, "internal_error", "Failed to map seats input", http.StatusInternalServerError, "")
 		return
 	}
 
@@ -54,16 +54,16 @@ func (h *HallHandler) PutSeats(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrSeatAlreadyExists):
 			log.Error("conflict: seats already exist in database", "err", err)
-			response.WriteError(w, "conflict", "Seats already exist in database", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Seats already exist in database", http.StatusConflict, "")
 		case errors.Is(err, errs.ErrHallHasNonCancelledSessions):
 			log.Error("conflict: hall has active sessions", "err", err)
-			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, "")
 		default:
 			log.Error("failed to replace hall seats", "err", err)
-			response.WriteError(w, "internal_error", "Failed to replace hall seats", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to replace hall seats", http.StatusInternalServerError, "")
 		}
 		return
 	}

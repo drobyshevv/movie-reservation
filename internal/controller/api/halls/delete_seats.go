@@ -27,16 +27,16 @@ func (h *HallHandler) DeleteSeats(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrHallNotFound):
 			log.Error("hall not found", "err", err)
-			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Hall not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrSeatNotFound):
 			log.Error("seats not found", "err", err)
-			response.WriteError(w, "not_found", "Seats not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Seats not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrHallHasNonCancelledSessions):
 			log.Error("cannot modify hall with active sessions", "err", err)
-			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Hall has non-cancelled sessions", http.StatusConflict, "")
 		default:
 			log.Error("failed to delete hall seats", "err", err)
-			response.WriteError(w, "internal_error", "Failed to delete hall seats", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to delete hall seats", http.StatusInternalServerError, "")
 		}
 		return
 	}

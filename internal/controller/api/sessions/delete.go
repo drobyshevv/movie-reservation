@@ -27,13 +27,13 @@ func (h *SessionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errs.ErrSessionNotFound):
 			log.Warn("session not found", "err", err)
-			response.WriteError(w, "not_found", "Session not found", http.StatusNotFound, err.Error())
+			response.WriteError(w, "not_found", "Session not found", http.StatusNotFound, "")
 		case errors.Is(err, errs.ErrSessionNotCancelled):
 			log.Warn("cannot delete active session", "err", err)
-			response.WriteError(w, "conflict", "Session must be cancelled before deletion", http.StatusConflict, err.Error())
+			response.WriteError(w, "conflict", "Session must be cancelled before deletion", http.StatusConflict, "")
 		default:
 			log.Error("failed to delete session", "err", err)
-			response.WriteError(w, "internal_error", "Failed to delete session", http.StatusInternalServerError, err.Error())
+			response.WriteError(w, "internal_error", "Failed to delete session", http.StatusInternalServerError, "")
 		}
 		return
 	}

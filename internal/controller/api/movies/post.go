@@ -22,7 +22,7 @@ func (h *MovieHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validator.Struct(req); err != nil {
 		log.Error("validation failed", "err", err)
-		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, err.Error())
+		response.WriteError(w, "validation_error", "Validation failed", http.StatusBadRequest, "")
 		return
 	}
 
@@ -31,7 +31,7 @@ func (h *MovieHandler) Post(w http.ResponseWriter, r *http.Request) {
 	result, err := h.usecase.Create(r.Context(), input)
 	if err != nil {
 		log.Error("failed to create movie", "err", err)
-		response.WriteError(w, "internal_error", "Failed to create movie", http.StatusInternalServerError, err.Error())
+		response.WriteError(w, "internal_error", "Failed to create movie", http.StatusInternalServerError, "")
 		return
 	}
 
