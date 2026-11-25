@@ -1,0 +1,19 @@
+env: "dev"
+
+http-server:
+  host: "0.0.0.0"
+  port: 8082
+
+db:
+  user: "postgres"
+  host: "db"
+  port: 5432
+  db_name: "movie-reservation"
+  sslmode: "disable"
+
+s3:
+  endpoint: "http://s3:9000"
+  bucket: "posters"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  region: "us-east-1"

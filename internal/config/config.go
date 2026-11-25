@@ -1,0 +1,113 @@
+package config
+
+import (
+	"errors"
+	"flag"
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
+)
+
+type Config struct {
+	Env    string     `yaml:"env" env:"ENV"`
+	Server HttpServer `yaml:"http-server"`
+	DB     DataBase   `yaml:"db"`
+	S3     S3         `yaml:"s3"`
+}
+
+type HttpServer struct {
+	Host         string        `yaml:"host" env:"SERVER_HOST" env-default:"localhost"`
+	Port         int           `yaml:"port" env:"SERVER_PORT" env-default:"8081"`
+	ReadTimeout  time.Duration `yaml:"read-timeout" env:"SERVER_READ_TIMEOUT" env-default:"5s"`
+	WriteTimeout time.Duration `yaml:"write-timeout" env:"SERVER_WRITE_TIMEOUT" env-default:"10s"`
+	IdleTimeout  time.Duration `yaml:"idle-timeout" env:"SERVER_IDLE_TIMEOUT" env-default:"60s"`
+}
+
+type DataBase struct {
+	User     string `yaml:"user" env:"DB_USER" env-default:"postgres"`
+	Password string `yaml:"password" env:"POSTGRES_PASSWORD"`
+	Host     string `yaml:"host" env:"DB_HOST" env-default:"localhost"`
+	Port     int    `yaml:"port" env:"DB_PORT" env-default:"5432"`
+	Name     string `yaml:"db_name" env:"DB_NAME" env-default:"movie-reservation"`
+	SslMode  string `yaml:"sslmode" env:"DB_SSLMODE" env-default:"disable"`
+}
+
+type S3 struct {
+	Endpoint  string `yaml:"endpoint" env:"S3_ENDPOINT"`
+	Bucket    string `yaml:"bucket" env:"S3_BUCKET"`
+	AccessKey string `yaml:"access-key" env:"S3_ACCESS_KEY"`
+	SecretKey string `yaml:"secret-key" env:"S3_SECRET_KEY"`
+	Region    string `yaml:"region" env:"S3_REGION" env-default:"us-east-1"`
+}
+
+func BuildDSN(db DataBase) string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		db.User,
+		db.Password,
+		db.Host,
+		db.Port,
+		db.Name,
+		db.SslMode,
+	)
+}
+
+func MustLoadConfig() *Config {
+	var cfg Config
+
+	path := fetchConfigPath()
+	if path == "" {
+		panic("failed to read config path")
+	}
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		panic(fmt.Sprintf("config file does not exist: %s", path))
+	}
+
+	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
+		panic(fmt.Sprintf("failed to read config: %s", err))
+	}
+
+	if err := validator(cfg); err != nil {
+		panic(fmt.Sprintf("incorrect data config: %s", err))
+	}
+
+	return &cfg
+}
+
+func fetchConfigPath() string {
+	var path string
+
+	flag.StringVar(&path, "config-path", "", "path to config")
+	flag.Parse()
+
+	if path == "" {
+		path = os.Getenv("CONFIG_PATH")
+	}
+
+	return path
+}
+
+func validator(cfg Config) error {
+	if cfg.Server.Port < 1 {
+		return errors.New("server port should be positive")
+	}
+	if cfg.DB.Port < 1 {
+		return errors.New("db port should be positive")
+	}
+	if cfg.DB.Password == "" {
+		return errors.New("db password must not be empty")
+	}
+	if cfg.S3.Endpoint == "" {
+		return errors.New("S3 endpoint must not be empty")
+	}
+	if cfg.S3.Bucket == "" {
+		return errors.New("S3 bucket must not be empty")
+	}
+	if cfg.S3.AccessKey == "" || cfg.S3.SecretKey == "" {
+		return errors.New("S3 credentials must not be empty")
+	}
+	return nil
+}

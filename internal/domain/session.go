@@ -1,0 +1,107 @@
+package domain
+
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrInvalidHallOrMovieID    = errors.New("invalid hall or movie ID")
+	ErrInvalidSessionIDs       = errors.New("invalid session IDs")
+	ErrSessionNotScheduled     = errors.New("only scheduled sessions can be changed")
+	ErrSessionNotCancelled     = errors.New("only cancelled sessions can be scheduled")
+	ErrSessionNotActive        = errors.New("only scheduled sessions can be activated")
+	ErrSessionAlreadyCancelled = errors.New("session is already cancelled")
+	ErrInvalidSessionStatus    = errors.New("invalid session status")
+)
+
+type SessionStatus string
+
+const (
+	StatusScheduled SessionStatus = "scheduled"
+	StatusActive    SessionStatus = "active"
+	StatusCancelled SessionStatus = "cancelled"
+)
+
+type Session struct {
+	id        int64
+	hallID    int64
+	movieID   int64
+	status    SessionStatus
+	period    TimeRange
+	createdAt time.Time
+}
+
+func NewSession(
+	hallID, movieID int64,
+	period TimeRange,
+) (Session, error) {
+	if hallID <= 0 || movieID <= 0 {
+		return Session{}, ErrInvalidHallOrMovieID
+	}
+
+	return Session{
+		hallID:  hallID,
+		movieID: movieID,
+		period:  period,
+		status:  StatusScheduled,
+	}, nil
+}
+
+func RestoreSession(
+	id, hallID, movieID int64,
+	status SessionStatus,
+	period TimeRange,
+	createdAt time.Time,
+) (Session, error) {
+	if id <= 0 || hallID <= 0 || movieID <= 0 {
+		return Session{}, ErrInvalidSessionIDs
+	}
+
+	return Session{
+		id:        id,
+		hallID:    hallID,
+		movieID:   movieID,
+		status:    status,
+		period:    period,
+		createdAt: createdAt,
+	}, nil
+}
+
+func (s *Session) ChangePeriod(period TimeRange) error {
+	if s.status != StatusScheduled {
+		return ErrSessionNotScheduled
+	}
+
+	s.period = period
+	return nil
+}
+
+func (s *Session) ChangeStatus(status SessionStatus) error {
+	switch status {
+	case StatusScheduled:
+		if s.status != StatusCancelled {
+			return ErrSessionNotCancelled
+		}
+	case StatusActive:
+		if s.status != StatusScheduled {
+			return ErrSessionNotActive
+		}
+	case StatusCancelled:
+		if s.status == StatusCancelled {
+			return ErrSessionAlreadyCancelled
+		}
+	default:
+		return ErrInvalidSessionStatus
+	}
+
+	s.status = status
+	return nil
+}
+
+func (s *Session) ID() int64             { return s.id }
+func (s *Session) HallID() int64         { return s.hallID }
+func (s *Session) MovieID() int64        { return s.movieID }
+func (s *Session) Status() SessionStatus { return s.status }
+func (s *Session) Period() TimeRange     { return s.period }
+func (s *Session) CreatedAt() time.Time  { return s.createdAt }
