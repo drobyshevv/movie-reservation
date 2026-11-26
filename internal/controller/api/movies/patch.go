@@ -45,7 +45,7 @@ func (h *MovieHandler) Patch(w http.ResponseWriter, r *http.Request) {
 
 	input := req.ToInput()
 
-	result, err := h.usecase.Update(r.Context(), id, input)
+	result, err := h.movieUsecase.Update(r.Context(), id, input)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):

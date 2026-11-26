@@ -28,7 +28,7 @@ func (h *MovieHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	input := req.ToInput()
 
-	result, err := h.usecase.Create(r.Context(), input)
+	result, err := h.movieUsecase.Create(r.Context(), input)
 	if err != nil {
 		log.Error("failed to create movie", "err", err)
 		response.WriteError(w, "internal_error", "Failed to create movie", http.StatusInternalServerError, "")

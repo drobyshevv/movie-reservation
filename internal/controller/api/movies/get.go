@@ -24,7 +24,7 @@ func (h *MovieHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.usecase.Get(r.Context(), id)
+	result, err := h.movieUsecase.Get(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):
@@ -37,7 +37,7 @@ func (h *MovieHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := dto.MovieResponse{}
+	resp := dto.MovieWithGenresResponse{}
 	resp.FromModel(*result)
 
 	w.Header().Set("Content-Type", "application/json")

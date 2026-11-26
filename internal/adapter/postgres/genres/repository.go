@@ -210,3 +210,106 @@ func (r *GenreRepository) GetGenreMovies(
 
 	return movies, nil
 }
+
+func (r *GenreRepository) GetMovieGenres(ctx context.Context, movieID int64) ([]domain.Genre, error) {
+	const op = "postgres.genres.GetMovieGenres"
+
+	var exists bool
+
+	err := r.pool.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM movies WHERE id = $1)`,
+		movieID,
+	).Scan(&exists)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: check movie: %w", op, err)
+	}
+
+	if !exists {
+		return nil, errs.ErrMovieNotFound
+	}
+
+	query := `SELECT g.id, g.type
+	FROM genres AS g
+	JOIN movie_genre AS mg ON g.id = mg.genre_id
+	WHERE mg.movie_id = $1;`
+
+	rows, err := r.pool.Query(ctx, query, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+
+	var genres []domain.Genre
+
+	for rows.Next() {
+		var id int64
+		var typeGenre string
+
+		if err := rows.Scan(&id, &typeGenre); err != nil {
+			return nil, fmt.Errorf("%s: scan: %w", op, err)
+		}
+
+		genre, err := domain.RestoreGenre(id, typeGenre)
+		if err != nil {
+			return nil, fmt.Errorf("%s: restore genre: %w", op, err)
+		}
+
+		genres = append(genres, genre)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: iterate rows: %w", op, err)
+	}
+
+	return genres, nil
+}
+
+func (r *GenreRepository) CreateMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+	const op = "postgres.genres.PostMovieGenre"
+
+	query := `
+	INSERT INTO movie_genre (movie_id, genre_id)	
+	VALUES ($1, $2)
+	`
+
+	_, err := r.pool.Exec(ctx, query, movieID, genreID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.ConstraintName == "movie_genre_movie_id_fkey" {
+				return fmt.Errorf("%s: %w", op, errs.ErrMovieNotFound)
+			}
+			if pgErr.ConstraintName == "movie_genre_genre_id_fkey" {
+				return fmt.Errorf("%s: %w", op, errs.ErrGenreNotFound)
+			}
+			if pgErr.Code == "23505" {
+				return fmt.Errorf("%s: %w", op, errs.ErrMovieGenreAlreadyExists)
+			}
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (r *GenreRepository) DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+	const op = "postgres.genres.DeleteMovieGenre"
+
+	query := `
+	DELETE FROM movie_genre
+	WHERE movie_id = $1
+	AND genre_id = $2
+	`
+
+	tag, err := r.pool.Exec(ctx, query, movieID, genreID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("%s: %w", op, errs.ErrMovieGenreNotFound)
+	}
+
+	return nil
+}

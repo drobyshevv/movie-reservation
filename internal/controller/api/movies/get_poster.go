@@ -24,7 +24,7 @@ func (h *MovieHandler) GetPoster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := h.usecase.GetPoster(r.Context(), id)
+	file, err := h.movieUsecase.GetPoster(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):

@@ -44,7 +44,7 @@ func (h *MovieHandler) PutPoster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.PutPoster(r.Context(), id, file, header.Size)
+	err = h.movieUsecase.PutPoster(r.Context(), id, file, header.Size)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):

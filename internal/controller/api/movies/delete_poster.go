@@ -23,7 +23,7 @@ func (h *MovieHandler) DeletePoster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.DeletePoster(r.Context(), id)
+	err = h.movieUsecase.DeletePoster(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):

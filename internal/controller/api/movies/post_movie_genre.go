@@ -30,7 +30,7 @@ func (h *MovieHandler) PostMovieGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.CreateMovieGenre(r.Context(), movieID, genreID)
+	err = h.genreUsecase.CreateMovieGenre(r.Context(), movieID, genreID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):

@@ -13,7 +13,7 @@ func (h *MovieHandler) List(w http.ResponseWriter, r *http.Request) {
 	const op = "http.movies.List"
 	log := h.log.With(slog.String("op", op))
 
-	result, err := h.usecase.List(r.Context())
+	result, err := h.movieUsecase.List(r.Context())
 	if err != nil {
 		log.Error("failed to get movies", "err", err)
 		response.WriteError(w, "internal_error", "Failed to get movies", http.StatusInternalServerError, "")

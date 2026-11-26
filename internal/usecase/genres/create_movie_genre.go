@@ -1,12 +1,12 @@
-package movies
+package genres
 
 import (
 	"context"
 	"fmt"
 )
 
-func (u *MovieUseCase) CreateMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
-	const op = "usecase.movie.CreateMovieGenre"
+func (u *GenreUseCase) CreateMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+	const op = "usecase.genres.CreateMovieGenre"
 
 	err := u.repository.CreateMovieGenre(ctx, movieID, genreID)
 	if err != nil {

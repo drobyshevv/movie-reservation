@@ -1,12 +1,12 @@
-package movies
+package genres
 
 import (
 	"context"
 	"fmt"
 )
 
-func (u *MovieUseCase) DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
-	const op = "usecase.movie.DeleteMovieGenre"
+func (u *GenreUseCase) DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
+	const op = "usecase.genres.DeleteMovieGenre"
 
 	err := u.repository.DeleteMovieGenre(ctx, movieID, genreID)
 	if err != nil {

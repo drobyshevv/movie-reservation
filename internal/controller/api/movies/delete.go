@@ -22,7 +22,7 @@ func (h *MovieHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.Delete(r.Context(), id)
+	err = h.movieUsecase.Delete(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):
