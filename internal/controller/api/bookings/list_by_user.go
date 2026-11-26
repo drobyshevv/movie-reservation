@@ -15,7 +15,7 @@ func (h *BookingHandler) ListByUser(w http.ResponseWriter, r *http.Request) {
 
 	log := h.log.With(slog.String("op", op))
 
-	userIDStr := r.PathValue("user_id")
+	userIDStr := r.PathValue("user_uid")
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		log.Info("invalid user ID format", "raw_user_id", userIDStr, "err", err)
