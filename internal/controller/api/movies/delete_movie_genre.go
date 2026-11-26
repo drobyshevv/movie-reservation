@@ -30,7 +30,7 @@ func (h *MovieHandler) DeleteMovieGenre(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = h.usecase.DeleteMovieGenre(r.Context(), movieID, genreID)
+	err = h.genreUsecase.DeleteMovieGenre(r.Context(), movieID, genreID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieGenreNotFound):

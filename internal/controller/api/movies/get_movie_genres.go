@@ -12,8 +12,8 @@ import (
 	errs "github.com/drobyshevv/movie-reservation/internal/errors"
 )
 
-func (h *MovieHandler) GetMovieGenre(w http.ResponseWriter, r *http.Request) {
-	const op = "http.movies.GetWithGenres"
+func (h *MovieHandler) GetMovieGenres(w http.ResponseWriter, r *http.Request) {
+	const op = "http.movies.GetMovieGenres"
 	log := h.log.With(slog.String("op", op))
 
 	idStr := r.PathValue("id")
@@ -24,21 +24,20 @@ func (h *MovieHandler) GetMovieGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.usecase.GetWithGenres(r.Context(), id)
+	result, err := h.genreUsecase.GetMovieGenres(r.Context(), id)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrMovieNotFound):
 			log.Warn("movie not found", "err", err)
 			response.WriteError(w, "not_found", "Movie not found", http.StatusNotFound, "")
 		default:
-			log.Error("failed to get movie with genres", "err", err)
+			log.Error("failed to get movie genres", "err", err)
 			response.WriteError(w, "internal_error", "Failed to get movie with genres", http.StatusInternalServerError, "")
 		}
 		return
 	}
 
-	resp := dto.MovieWithGenresResponse{}
-	resp.FromModel(*result)
+	resp := dto.ToGenreListResponse(result)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

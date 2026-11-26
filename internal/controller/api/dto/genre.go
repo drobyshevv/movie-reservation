@@ -36,7 +36,18 @@ func (g *UpdateGenreRequest) ToModel() string {
 	return g.TypeGenre
 }
 
-func (g *GenreMovieResponse) FromModel(gm genreuc.GenreMovie) {
-	g.ID = gm.ID
-	g.Title = gm.Title
+func (g *GenreMovieResponse) FromModel(m genreuc.GenreMovie) {
+	g.ID = m.ID
+	g.Title = m.Title
+}
+
+func ToGenreListResponse(m []domain.Genre) []GenreResponse {
+	resp := []GenreResponse{}
+	for _, v := range m {
+		resp = append(resp, GenreResponse{
+			ID:        v.ID(),
+			TypeGenre: v.TypeGenre(),
+		})
+	}
+	return resp
 }

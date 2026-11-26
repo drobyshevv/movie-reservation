@@ -30,17 +30,17 @@ func NewRouter(
 	router.Use(middleware.URLFormat)
 
 	router.Route("/halls", func(r chi.Router) {
-		r.Get("", hallHandler.List)
-		r.Post("", hallHandler.PostWithSeats)
+		r.Get("/", hallHandler.List)
+		r.Post("/", hallHandler.PostWithSeats)
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", hallHandler.Get)
 			r.Put("/", hallHandler.Put)
 			r.Delete("/", hallHandler.Delete)
 			r.Route("/seats", func(r chi.Router) {
-				r.Get("", hallHandler.GetWithSeats)
-				r.Put("", hallHandler.PutSeats)
-				r.Delete("", hallHandler.DeleteSeats)
+				r.Get("/", hallHandler.GetWithSeats)
+				r.Put("/", hallHandler.PutSeats)
+				r.Delete("/", hallHandler.DeleteSeats)
 			})
 		})
 	})
@@ -50,23 +50,23 @@ func NewRouter(
 		r.Post("/", genreHandler.Post)
 
 		r.Route("/{id}", func(r chi.Router) {
-			r.Get("", genreHandler.Get)
-			r.Put("", genreHandler.Put)
-			r.Delete("", genreHandler.Delete)
+			r.Get("/", genreHandler.Get)
+			r.Put("/", genreHandler.Put)
+			r.Delete("/", genreHandler.Delete)
 			r.Get("/movies", genreHandler.GetGenreMovies)
 		})
 
 	})
 
 	router.Route("/movies", func(r chi.Router) {
-		r.Get("", movieHandler.List)
-		r.Post("", movieHandler.Post)
+		r.Get("/", movieHandler.List)
+		r.Post("/", movieHandler.Post)
 
 		r.Route("/{id}", func(r chi.Router) {
-			r.Get("", movieHandler.Get)
-			r.Patch("", movieHandler.Patch)
-			r.Delete("", movieHandler.Delete)
-			r.Get("/genres", movieHandler.GetMovieGenre)
+			r.Get("/", movieHandler.Get)
+			r.Patch("/", movieHandler.Patch)
+			r.Delete("/", movieHandler.Delete)
+			r.Get("/genres", movieHandler.GetMovieGenres)
 			r.Post("/genres/{genre_id}", movieHandler.PostMovieGenre)
 			r.Delete("/genres/{genre_id}", movieHandler.DeleteMovieGenre)
 
@@ -77,13 +77,13 @@ func NewRouter(
 	})
 
 	router.Route("/sessions", func(r chi.Router) {
-		r.Get("", sessionHandler.List)
-		r.Post("", sessionHandler.Post)
+		r.Get("/", sessionHandler.List)
+		r.Post("/", sessionHandler.Post)
 
 		r.Route("/{id}", func(r chi.Router) {
-			r.Get("", sessionHandler.Get)
-			r.Patch("", sessionHandler.Patch)
-			r.Delete("", sessionHandler.Delete)
+			r.Get("/", sessionHandler.Get)
+			r.Patch("/", sessionHandler.Patch)
+			r.Delete("/", sessionHandler.Delete)
 
 			r.Get("/bookings", bookingHandler.ListBySession)
 		})
@@ -92,7 +92,7 @@ func NewRouter(
 
 	router.Route("/bookings", func(r chi.Router) {
 		r.Get("/{id}", bookingHandler.Get)
-		r.Post("", bookingHandler.Post)
+		r.Post("/", bookingHandler.Post)
 		r.Patch("/{id}", bookingHandler.Patch)
 	})
 

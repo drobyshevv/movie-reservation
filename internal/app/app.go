@@ -69,7 +69,7 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 
 	hallHandler := handlerHalls.NewHallHandler(log, hallUseCase, validator)
 	genreHandler := handlerGenres.NewGenreHandler(log, genreUseCase, validator)
-	movieHandler := handlerMovies.NewMovieHandler(log, movieUseCase, validator)
+	movieHandler := handlerMovies.NewMovieHandler(log, movieUseCase, genreUseCase, validator)
 	sessionHandler := handlerSessions.NewSessionHandler(log, sessionUseCase, validator)
 	bookingHandler := handlerBookings.NewBookingHandler(log, bookingUseCase, validator)
 

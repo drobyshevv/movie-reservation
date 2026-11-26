@@ -23,4 +23,7 @@ type GenreRepository interface {
 	Update(ctx context.Context, id int64, genre domain.Genre) (*domain.Genre, error)
 	Delete(ctx context.Context, id int64) error
 	GetGenreMovies(ctx context.Context, id int64) ([]GenreMovie, error)
+	GetMovieGenres(ctx context.Context, movieID int64) ([]domain.Genre, error)
+	CreateMovieGenre(ctx context.Context, movieID int64, genreID int64) error
+	DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error
 }

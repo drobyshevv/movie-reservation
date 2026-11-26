@@ -12,7 +12,6 @@ import (
 	movieuc "github.com/drobyshevv/movie-reservation/internal/usecase/movies"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -81,54 +80,92 @@ func (r *MovieRepository) List(ctx context.Context) ([]domain.Movie, error) {
 	return movies, nil
 }
 
-func (r *MovieRepository) Get(ctx context.Context, id int64) (*domain.Movie, error) {
+func (r *MovieRepository) Get(ctx context.Context, id int64) (*movieuc.MovieWithGenres, error) {
 	const op = "postgres.movies.Get"
 
 	query := `
-	SELECT 
-		id, 
-		title, 
-		description, 
-		duration, 
-		created_at 
-	FROM movies
-	WHERE id = $1
+	SELECT
+		m.id,
+		m.title,
+		m.description,
+		m.duration,
+		m.created_at,
+		g.id AS genre_id,
+		g.type AS genre_type
+	FROM movies m
+	LEFT JOIN movie_genre mg ON mg.movie_id = m.id
+	LEFT JOIN genres g ON g.id = mg.genre_id
+	WHERE m.id = $1
 	`
 
-	var (
-		movieID     int64
-		title       string
-		description *string
-		duration    int32
-		createdAt   time.Time
-	)
-
-	err := r.pool.QueryRow(ctx, query, id).Scan(
-		&movieID,
-		&title,
-		&description,
-		&duration,
-		&createdAt,
-	)
+	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", op, errs.ErrMovieNotFound)
+		return nil, fmt.Errorf("%s: query: %w", op, err)
+	}
+	defer rows.Close()
+
+	var result movieuc.MovieWithGenres
+	var movieLoaded bool
+
+	for rows.Next() {
+		var (
+			id          int64
+			title       string
+			description *string
+			duration    int32
+			createdAt   time.Time
+			genreID     *int64
+			genreType   *string
+		)
+
+		if err := rows.Scan(
+			&id,
+			&title,
+			&description,
+			&duration,
+			&createdAt,
+			&genreID,
+			&genreType,
+		); err != nil {
+			return nil, fmt.Errorf("%s: scan: %w", op, err)
 		}
-		return nil, fmt.Errorf("%s: %w", op, err)
+
+		if !movieLoaded {
+			movie, err := domain.RestoreMovie(
+				id,
+				title,
+				description,
+				duration,
+				createdAt,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("%s: restore movie: %w", op, err)
+			}
+
+			result.Movie = movie
+			result.Genres = make([]domain.Genre, 0)
+			movieLoaded = true
+		}
+
+		if genreID != nil && genreType != nil {
+			genre, err := domain.RestoreGenre(*genreID, *genreType)
+			if err != nil {
+				return nil, fmt.Errorf("%s: restore genre: %w", op, err)
+			}
+
+			result.Genres = append(result.Genres, genre)
+		}
 	}
 
-	movie, err := domain.RestoreMovie(
-		movieID,
-		title,
-		description,
-		duration,
-		createdAt,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("%s: restore: %w", op, err)
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%s: rows: %w", op, err)
 	}
 
-	return &movie, nil
+	if !movieLoaded {
+		return nil, errs.ErrMovieNotFound
+	}
+
+	return &result, nil
 }
 
 func (r *MovieRepository) Create(ctx context.Context, movie domain.Movie) (*domain.Movie, error) {
@@ -420,34 +457,6 @@ func (r *MovieRepository) GetWithGenres(
 	}
 
 	return &result, nil
-}
-
-func (r *MovieRepository) CreateMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
-	const op = "postgres.movies.PostMovieGenre"
-
-	query := `
-	INSERT INTO movie_genre (movie_id, genre_id)	
-	VALUES ($1, $2)
-	`
-
-	_, err := r.pool.Exec(ctx, query, movieID, genreID)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.ConstraintName == "movie_genre_movie_id_fkey" {
-				return fmt.Errorf("%s: %w", op, errs.ErrMovieNotFound)
-			}
-			if pgErr.ConstraintName == "movie_genre_genre_id_fkey" {
-				return fmt.Errorf("%s: %w", op, errs.ErrGenreNotFound)
-			}
-			if pgErr.Code == "23505" {
-				return fmt.Errorf("%s: %w", op, errs.ErrMovieGenreAlreadyExists)
-			}
-		}
-		return fmt.Errorf("%s: %w", op, err)
-	}
-
-	return nil
 }
 
 func (r *MovieRepository) DeleteMovieGenre(ctx context.Context, movieID int64, genreID int64) error {
